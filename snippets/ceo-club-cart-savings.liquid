@@ -19,15 +19,26 @@
   </div>
 
   <div data-ceo-pending hidden>
-    <p class="ceo-club-savings__title">Your cart is saved</p>
+    <p class="ceo-club-savings__title">Your products are saved</p>
     <p class="ceo-club-savings__text">
-      Complete your CEO Club signup, then restore your items to checkout with your member perk.
+      Continue to the CEO Club membership page and add it to cart. Do not restore your products until after you finish membership checkout.
+    </p>
+  </div>
+
+  <div data-ceo-checkout hidden>
+    <p class="ceo-club-savings__title">Almost there</p>
+    <p class="ceo-club-savings__text">
+      Your products are saved. Checkout with <strong>membership only</strong> now.
+      After you become a member, come back and restore your products to get the 7% perk.
     </p>
   </div>
 
   <div class="ceo-club-savings__actions">
     <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--primary" data-ceo-join>
       Join CEO Club &amp; save
+    </button>
+    <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--primary" data-ceo-checkout-btn hidden>
+      Checkout membership
     </button>
     <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--secondary" data-ceo-restore hidden>
       Restore my items

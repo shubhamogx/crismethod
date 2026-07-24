@@ -1,0 +1,77 @@
+{%- liquid
+  unless  variant.available
+    continue
+  endunless
+-%}
+{% comment %} 
+{%- render 'quick-order-list-row',
+  item: product,
+  image: product.featured_media,
+  sku: product.selected_or_first_available_variant.sku,
+  variant: product.selected_or_first_available_variant
+-%} 
+{% endcomment %}
+{%- liquid 
+  
+  assign cart_qty = cart | item_count_for_variant: variant.id
+
+  assign current_inventory_quantity = variant.inventory_quantity
+  if variant.inventory_management != null and current_inventory_quantity > 0 and variant.inventory_policy != 'continue'
+    assign max_qty = current_inventory_quantity
+  else
+    assign max_qty = 999
+  endif
+  if variant.quantity_rule.max
+    assign max_qty = max_qty | at_most: variant.quantity_rule.max
+  endif
+-%}
+<tr class="t4s-variant-item" id="Variant-{{ variant.id }}" data-variant-id="{{ variant.id }}" data-cart-qty="{{ cart_qty }}">
+  <td class="t4s-variant-title">
+    <div class="t4s-variant-info">
+      {%- if show_image -%}
+        <div class="t4s-variant-image">
+          {%- assign image = variant.image | default: product.featured_media -%}
+          {{ image | image_url: width: image.width | image_tag: loading: 'lazy', fetchpriority: 'low', decoding: 'async', class: 't4s-variant-item__image', width: image.width, widths: '80,120,160,240', sizes: '(min-width: 1150px) 120px,80px', alt: variant.title | escape }}
+        </div>
+      {%- endif -%}
+      <span>{{ item.title }}</span>
+    </div>
+  </td>
+  <td class="t4s-variant-quantity">
+
+
+    <quantity-input class="t4s-quantity">
+      <span class="t4s-quantity-label">{{ item.title }}</span>
+
+      <div class="t4s-quantity-item-container">
+        <div class="t4s-quantity-item">
+            <button class="t4s-quantity-button" name="minus" type="button"><svg class="t4s-icon-button" width="9" height="1" viewBox="0 0 9 1" fill="currentColor"><path d="M9 1H5.14286H3.85714H0V1.50201e-05H3.85714L5.14286 0L9 1.50201e-05V1Z"></path></svg></button>
+            <input type="number" class="quantity-input" id="Quantity-{{ variant.id }}" data-quantity-variant-id="{{ variant.id }}" name="updates[{{ variant.id }}]" value="{{ cart | item_count_for_variant: variant.id }}" data-cart-quantity="{{ cart | item_count_for_variant: variant.id }}" min="0" data-min="{{ variant.quantity_rule.min }}"{% if variant.quantity_rule.max != null %} max="{{ variant.quantity_rule.max }}"{% else %} max="{{ max_qty }}"{% endif %} step="{{ variant.quantity_rule.increment }}" data-current-value="{{ cart | item_count_for_variant: variant.id | default: 0 }}" data-index="{{ variant.id }}">
+            <button class="t4s-quantity-button" name="plus" type="button"><svg class="t4s-icon-button" width="9" height="9" viewBox="0 0 9 9" fill="currentColor"><path d="M9 5.14286H5.14286V9H3.85714V5.14286H0V3.85714H3.85714V0H5.14286V3.85714H9V5.14286Z"></path></svg></button>
+        </div>
+
+          {%- if cart_qty > 0 -%}
+            <quick-order-list-remove-button id="Remove-{{ variant.id }}" data-index="{{ variant.id }}">
+                <a href="{{ item.url_to_remove }}" class="" aria-label="REmove {{ variant.title }}">
+                  Remove
+                </a>
+            </quick-order-list-remove-button>
+          {%- endif -%}
+      </div>
+  
+    </quantity-input>
+
+
+    
+
+
+
+
+  </td>
+  <td class="t4s-variant-price">
+    {%- render 'product-price', product: item, price_varies_style: settings.price_varies_style, type: 'card', isGrouped: isGrouped -%}
+  </td>
+  <td class="t4s-variant-subtotal">
+    <span class="t4s-total-price">{{ cart | line_items_for: item | sum: 'original_line_price' | money }}</span>
+  </td>
+</tr>

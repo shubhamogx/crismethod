@@ -1,0 +1,582 @@
+{{ 'section.css' | asset_url | stylesheet_tag }}
+{{ 'slideshow.css' | asset_url | stylesheet_tag }}
+{{ 'content-position.css' | asset_url | stylesheet_tag }}
+{{ 'slider-settings.css' | asset_url | stylesheet_tag }}
+{{ 'button-style.css' | asset_url | stylesheet_tag }}
+{{ 'featured-product-2.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign image_mb = section.settings.image_mb
+  assign image = section.settings.image | default: image_mb
+  assign mb_image = image_mb | default: image
+  if section.settings.layout == 't4s-container-wrap'
+    assign html_layout = '<div class="t4s-container">__</div>' | split: '__'
+  else
+    assign html_layout = '__' | split: '__'
+  endif
+
+  assign t4s_se_class = 't4s_nt_se_' | append: section.id
+
+  if section.settings.use_cus_css and section.settings.code_cus_css != blank
+    render 'se_cus_css', code_cus_css: section.settings.code_cus_css, t4s_se_class: t4s_se_class
+  endif
+
+  assign load = 'lazy'
+  if section.index < 3
+    assign load = 'eager'
+  endif
+-%}
+
+
+<div
+  id="{{ section.id }}"
+  class="t4s-featured-product-2"
+  style="
+    --t4s-space-pr-item: {{section.settings.s_p_item | plus: 0.0 | divided_by: 10.0}}rem;
+    --t4s-position-pr-item-bottom:  {{section.settings.p_b_item}}%;
+    --t4s-position-pr-item-left: {{section.settings.t4s_postion_left_content}}%;
+    --t4s-label-font-size: {{ section.settings.label_size | plus: 0.0 | divided_by: 10.0 }}rem;
+    --label-color:{{ section.settings.label_color }};
+    --t4s-description-font-size: {{ section.settings.des_size | plus: 0.0 | divided_by: 10.0}}rem;
+    --t4s-description-color:{{ section.settings.des_color }};
+    --t4s-height-image-mobile: {{ section.settings.t4s_height_image_mobile }}px;
+    --t4s-product-info-position: {{ section.settings.t4s_product_info_position }}%;
+    --t4s-product-info-position-horizontal: {{ section.settings.t4s_product_info_position_hozontal }}%;
+    --t4s-product-info-align: {{ section.settings.t4s_product_info_align }};
+  "
+>
+  {{- html_layout[0] -}}
+  <div class="t4s-gx-0 t4s_cover">
+    <div class="t4s-pr">
+      {%- if image -%}
+        {% liquid
+          assign fetchpriority = 'auto'
+          if forloop.first
+            assign fetchpriority = 'high'
+          endif
+          if section.settings.image_mb == blank
+            assign class = 't4s-img-as-bg t4s-slide-' | append: section.settings.animate_slide
+            echo image | image_url: width: image.width | image_tag: class: class, alt: image.alt, loading: load, size: '100vw', widths: '100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3400,3600,3800,4000', fetchpriority: fetchpriority
+          else
+            assign class = 't4s-img-as-bg t4s-d-none t4s-d-md-block t4s-slide-' | append: section.settings.animate_slide
+            echo image | image_url: width: image.width | image_tag: class: class, alt: image.alt, loading: load, size: '100vw', widths: '100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3400,3600,3800,4000', fetchpriority: fetchpriority
+
+            assign class = 't4s-img-as-bg t4s-d-md-none t4s-slide-' | append: section.settings.animate_slide
+            echo mb_image | image_url: width: mb_image.width | image_tag: class: class, alt: mb_image.alt, loading: load, size: '100vw', widths: '375, 550, 750, 1100', fetchpriority: fetchpriority
+          endif
+        -%}
+      {%- else -%}
+        {%- capture current -%}{% cycle 1, 2 %}{%- endcapture -%}
+        {{ 'lifestyle-' | append: current | placeholder_svg_tag: 't4s-placeholder-svg t4s-svg-bg1' }}
+      {%- endif -%}
+
+      {%- if section.settings.t4s_show_shadow -%}
+        <div
+          style="
+                        width: 100%;
+                        height: 50%;
+                        position: absolute;
+            background: linear-gradient(
+             182deg,
+             rgba(225, 221, 221, 0.09) 22.28%,
+             rgba(39, 38, 38, 0.40) 72.2%,
+             rgba(1, 1, 1, 0.20) 97.92%
+            );          filter: blur(25px);
+                        bottom: 25px;
+          "
+        ></div>
+      {%- endif -%}
+
+      <div class="t4s-container-product">
+        <div class="t4s-pa t4s-item-container-product">
+          <span>{{ 'products.fbt.just' | t }}</span>
+          <span style="color: #FFFFFF">{{ section.settings.product.price | money }}</span>
+
+          <a href="{{ section.settings.button_link }}" class="t4s-button-product__item">
+            {{- section.settings.button_text }}
+          </a>
+        </div>
+        <div class="t4s-pa t4s-item-container-product__infomation">
+          {%- assign item_block = section.blocks | where: 'type', 'product_item' -%}
+
+          {%- if item_block -%}
+            {% for item in item_block %}
+              <div class="t4s-item-product__infomation">
+                <div style="display: flex;flex-direction: column">
+                  <span class="t4s-item-product__description">
+                    {{- item.settings.description -}}
+                  </span>
+                  <span class="t4s-item-product__label">
+                    {{- item.settings.label -}}
+                  </span>
+                </div>
+              </div>
+            {% endfor %}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+  {{- html_layout[1] -}}
+</div>
+<div class="t4s-container">
+  {%- render 'section_tophead', se_stts: section.settings -%}
+</div>
+
+{%- assign block_fbt = section.blocks | where: 'type', 'fbt' | first -%}
+{%- if block_fbt -%}
+  {%- if block_fbt.settings.product_list != blank and section.settings.product != blank -%}
+    <div style="display: flex; justify-content: center">
+      {%- render 'FBT', product: section.settings.product, product_list: block_fbt.settings.product_list, is_section: true, t4s-button-color: {{ section.settings.t4s_button_color }} -%}
+    </div>
+  {%- else -%}
+    <div class="t4s-container">
+      <div class="t4s-default-fbt__container">
+        <div class="t4s-default-content-fbt__container">
+          <ul class="t4s-align-items-center t4s-fbt__list-default-img">
+            {% for i in (1..5) %}
+              <li>
+                <div class="t4s-fbt-default">
+                  <div class="t4s-pr">
+                    <div class="t4s-fbt-default_img"></div>
+
+                    {%- if i == 6 or i == 1 -%}
+                      <span></span>
+                    {%- else -%}
+                      <span
+                        class="t4s-pa"
+                        style="
+                          top: 40%;
+                          left: -5px;
+                        "
+                        >+</span
+                      >
+                    {%- endif -%}
+                  </div>
+                  <div class="t4s-fbt_title"></div>
+                  <div class="t4s-fbt_price"></div>
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+          <div class="t4s-fbt-product-title-container">
+            <ul>
+              {% for i in (1..5) %}
+                <li class="t4s-fbt-product-title-item"></li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+        <div class="t4s-fbt-product-price-container">
+          <div class="t4s-product-price">Price: <span>xxx</span></div>
+          <button class="t4s-fbt__submit t4s-btn-loading__svg" type="submit" name="add" data-atc-form="">
+            <span class="t4s-btn-atc_text">Add selected to cart</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{%- style -%}
+  .t4s-featured-product-2-container {
+    --t4s-button-color: {{ section.settings.t4s_button_color }};
+  }
+  .t4s-featured-product-2-container .t4s-fbt-product-price-container,
+  .t4s-featured-product-2-container .is--col-fbt-total-price {
+    --t4s-bgr-add-to-cart: {{ block_fbt.settings.t4s_bgr_add_to_cart }};
+  }
+{%- endstyle -%}
+
+{% schema %}
+{
+  "name": "Featured product 2",
+  "tag": "section",
+  "class": "t4s-featured-product-2-container",
+  "settings": [
+    {
+      "type": "header",
+      "content": "1. Heading options"
+    },
+    {
+      "type": "text",
+      "id": "top_heading",
+      "label": "+ Heading",
+      "default": "Heading"
+    },
+    {
+      "type": "select",
+      "id": "design_heading",
+      "label": "+ Design heading",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "Design 01"
+        },
+        {
+          "value": "2",
+          "label": "Design 02"
+        },
+        {
+          "value": "3",
+          "label": "Design 03"
+        },
+        {
+          "value": "4",
+          "label": "Design 04"
+        },
+        {
+          "value": "5",
+          "label": "Design 05"
+        },
+        {
+          "value": "6",
+          "label": "Design 06 (with line-awesome)"
+        },
+        {
+          "value": "7",
+          "label": "Design 07"
+        },
+        {
+          "value": "8",
+          "label": "Design 08"
+        },
+        {
+          "value": "9",
+          "label": "Design 09"
+        },
+        {
+          "value": "10",
+          "label": "Design 10"
+        },
+        {
+          "value": "11",
+          "label": "Design 11"
+        },
+        {
+          "value": "12",
+          "label": "Design 12"
+        },
+        {
+          "value": "13",
+          "label": "Design 13"
+        },
+        {
+          "value": "14",
+          "label": "Design 14"
+        },
+        {
+          "value": "15",
+          "label": "Design 15"
+        },
+        {
+          "value": "16",
+          "label": "Design 16"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "+ Heading align",
+      "default": "t4s-text-center",
+      "info": "Align center does not work with Heading design 15",
+      "options": [
+        {
+          "value": "t4s-text-start",
+          "label": "Left"
+        },
+        {
+          "value": "t4s-text-center",
+          "label": "Center"
+        },
+        {
+          "value": "t4s-text-end",
+          "label": "Right"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "icon_heading",
+      "label": "Enter an icon name",
+      "info": "Only used for design 6 [Line Awesome](https://kalles.the4.co/font-lineawesome/)",
+      "default": "las la-gem"
+    },
+    {
+      "type": "textarea",
+      "id": "top_subheading",
+      "label": "+ Subheading"
+    },
+    {
+      "type": "number",
+      "id": "tophead_mt",
+      "label": "+ Space top (px)",
+      "info": "The vertical spacing between heading and content",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "2. General options"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "default": "t4s-container-fluid",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "t4s-container-wrap",
+          "label": "Wrapped container"
+        },
+        {
+          "value": "t4s-container-fluid",
+          "label": "Full width"
+        }
+      ]
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "1920 x 600px .jpg recommended"
+    },
+    {
+      "type": "checkbox",
+      "id": "t4s_show_shadow",
+      "label": "Image shadow",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "t4s_height_image_mobile",
+      "label": "Image height on mobile",
+      "min": 100,
+      "max": 1000,
+      "step": 10,
+      "default": 300,
+      "unit": "px"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Button options"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button label",
+      "default": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "color",
+      "id": "t4s_button_color",
+      "label": "Button color",
+      "default": "#F92C2C"
+    },
+    {
+      "id": "p_b_item",
+      "type": "range",
+      "label": "Button position vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 10,
+      "unit": "%",
+      "info": "Don't work on mobile"
+    },
+
+    {
+      "id": "t4s_postion_left_content",
+      "type": "range",
+      "label": "Button position horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 5,
+      "unit": "%",
+      "info": "Don't work on mobile"
+    },
+    {
+      "type": "header",
+      "content": "Product info options"
+    },
+    {
+      "id": "t4s_product_info_position",
+      "type": "range",
+      "label": "Product info position vertical",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "default": 10,
+      "unit": "%",
+      "info": "Don't work on mobile"
+    },
+    {
+      "id": "t4s_product_info_position_hozontal",
+      "type": "range",
+      "label": "Product info position horizontal",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "default": 5,
+      "unit": "%",
+      "info": "Don't work on mobile"
+    },
+    {
+      "id": "s_p_item",
+      "type": "range",
+      "label": "Space product info",
+      "min": 10,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "unit": "px",
+      "info": "Don't work on mobile"
+    },
+    {
+      "id": "label_size",
+      "type": "range",
+      "label": "Label font size on desktop",
+      "min": 16,
+      "max": 50,
+      "step": 1,
+      "default": 20,
+      "unit": "px"
+    },
+    {
+      "id": "des_size",
+      "type": "range",
+      "label": "Description font size on desktop",
+      "min": 16,
+      "max": 50,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "id": "label_color",
+      "type": "color",
+      "label": "Label color",
+      "default": "#F92C2C"
+    },
+    {
+      "id": "des_color",
+      "type": "color",
+      "label": "Description color",
+      "default": "#f2f2f2"
+    },
+    {
+      "type": "text_alignment",
+      "id": "t4s_product_info_align",
+      "label": "Product info alignment"
+    },
+    {
+      "type": "header",
+      "content": "+ Custom css"
+    },
+
+    {
+      "id": "use_cus_css",
+      "type": "checkbox",
+      "label": "Use custom css",
+      "default": false,
+      "info": "If you want custom style for this section."
+    },
+    {
+      "id": "code_cus_css",
+      "type": "textarea",
+      "label": "Code custom css",
+      "info": "Use selector. SectionID to style css"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_item",
+      "name": "Product info",
+      "limit": 3,
+      "settings": [
+        {
+          "id": "label",
+          "type": "text",
+          "label": "Label"
+        },
+
+        {
+          "id": "description",
+          "type": "textarea",
+          "label": "Description"
+        }
+      ]
+    },
+    {
+      "type": "fbt",
+      "name": "FBT",
+      "settings": [
+        {
+          "type": "product_list",
+          "id": "product_list",
+          "label": "Products",
+          "limit": 5
+        },
+        {
+          "type": "color",
+          "id": "t4s_bgr_add_to_cart",
+          "label": "Total price box background color",
+          "default": "#F5F5F5"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Product 2",
+      "category": "04. Product(s)",
+      "settings": {
+        "top_heading": "Featured Product 2",
+        "design_heading": "1",
+        "heading_align": "t4s-text-center"
+      },
+      "blocks": [
+        {
+          "type": "product_item",
+          "settings": {
+            "label": "Product Feature 1",
+            "description": "Description 1"
+          }
+        },
+        {
+          "type": "product_item",
+          "settings": {
+            "label": "Product Feature 2",
+            "description": "Description 2"
+          }
+        },
+        {
+          "type": "product_item",
+          "settings": {
+            "label": "Product Feature 3",
+            "description": "Description 3"
+          }
+        },
+        {
+          "type": "fbt",
+          "settings": {
+            "product_list": "{{ section.settings.product.metafields[\"shopify--discovery--product_recommendation\"].complementary_products.value }}"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

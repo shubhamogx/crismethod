@@ -1,0 +1,531 @@
+{% comment %}
+  CRIS Skincare AI Analyzer — Shopify Section
+{% endcomment %}
+
+{% liquid
+  assign member_tag_keyword = section.settings.member_tag_keyword | downcase | strip
+  assign is_member = false
+
+  if customer
+    if member_tag_keyword == blank
+      assign is_member = true
+    else
+      for ctag in customer.tags
+        assign normalized_tag = ctag | downcase | strip
+        if normalized_tag contains member_tag_keyword
+          assign is_member = true
+          break
+        endif
+      endfor
+    endif
+  elsif request.design_mode
+    assign is_member = true
+  endif
+
+  assign show_non_member_lock = false
+  assign show_member_beta_popup = false
+
+  if is_member
+    if section.settings.enable_member_beta_popup
+      assign show_member_beta_popup = true
+    endif
+  else
+    assign show_non_member_lock = true
+  endif
+%}
+
+<div id="cris-analyzer-section-{{ section.id }}" class="{% if show_non_member_lock %}cris-analyzer--locked{% endif %}">
+  {% if is_member %}
+    <div id="cris-analyzer-root"></div>
+
+    <script>
+      window.process = window.process || { env: { NODE_ENV: "production" } };
+      window.__CRIS_API_URL__ = {{ section.settings.api_url | json }};
+      window.__CRIS_CUSTOMER_ID__ = {% if customer %}{{ customer.id }}{% else %}null{% endif %};
+      window.dataLayer = window.dataLayer || [];
+    </script>
+
+    {{ 'cris-widget.iife.js' | asset_url | script_tag }}
+
+    {% if show_member_beta_popup %}
+      {% render 'cris-analyzer-member-popup', section: section %}
+    {% endif %}
+
+  {% else %}
+    <div class="cris-analyzer-lock__preview" aria-hidden="true">
+      {% if section.settings.locked_preview_image != blank %}
+        {{
+          section.settings.locked_preview_image
+          | image_url: width: 2000
+          | image_tag:
+            loading: 'lazy',
+            class: 'cris-analyzer-lock__image',
+            alt: section.settings.preview_image_alt | default: 'CRIS Analyzer preview'
+        }}
+      {% else %}
+        <div class="cris-analyzer-lock__placeholder">
+          {{ section.settings.preview_placeholder_text }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="cris-analyzer-lock__overlay" role="dialog" aria-modal="true" aria-label="{{ section.settings.modal_accessibility_label | escape }}">
+      <div class="cris-analyzer-lock__modal">
+        <p class="cris-analyzer-lock__message">
+          {{ section.settings.non_member_message }}
+        </p>
+
+        <div class="cris-analyzer-lock__actions">
+          <div class="cris-analyzer-lock__action-block">
+            <p class="cris-analyzer-lock__action-label">
+              {{ section.settings.join_block_label }}
+            </p>
+
+            <a
+              href="{% if section.settings.non_member_button_link != blank %}{{ section.settings.non_member_button_link }}{% else %}{{ section.settings.fallback_join_url }}{% endif %}"
+              class="cris-analyzer-lock__cta"
+            >
+              {{ section.settings.non_member_button_label }}
+            </a>
+          </div>
+
+          <div class="cris-analyzer-lock__action-block">
+            <p class="cris-analyzer-lock__action-label">
+              {{ section.settings.login_block_label }}
+            </p>
+
+            <a
+              href="{{ routes.account_login_url }}"
+              class="cris-analyzer-lock__cta cris-analyzer-lock__cta--secondary"
+            >
+              {{ section.settings.login_button_label }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('click', function(event) {
+    var closeButton = event.target.closest('[data-cris-close-member-popup]');
+    if (!closeButton) return;
+
+    var section = closeButton.closest('#cris-analyzer-section-{{ section.id }}');
+    if (!section) return;
+
+    var popup = section.querySelector('.cris-analyzer-lock__overlay--member');
+    if (popup) {
+      popup.style.display = 'none';
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "CRIS Routine Analyzer",
+  "tag": "section",
+  "class": "section section-cris-routine-analyzer",
+  "settings": [
+    {
+      "type": "text",
+      "id": "api_url",
+      "label": "Vercel API URL",
+      "info": "Your deployed Vercel API base URL. No trailing slash.",
+      "placeholder": "https://your-app.vercel.app"
+    },
+    {
+      "type": "header",
+      "content": "Member access"
+    },
+    {
+      "type": "text",
+      "id": "member_tag_keyword",
+      "label": "Member tag keyword",
+      "default": "cris-method-member",
+      "info": "Section is usable only if customer tag contains this keyword."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_member_beta_popup",
+      "label": "Enable member beta popup",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "member_modal_accessibility_label",
+      "label": "Member popup accessibility label",
+      "default": "Routine Builder beta notice"
+    },
+    {
+      "type": "textarea",
+      "id": "member_beta_message_1",
+      "label": "Member beta message line 1",
+      "default": "The CRIS Method Routine Builder is currently in beta. This means, it may not recognize some products in your routine, or you may see minor issues within the tool itself. You are helping us train the tool just by using it!"
+    },
+    {
+      "type": "textarea",
+      "id": "member_beta_message_2",
+      "label": "Member beta message line 2",
+      "default": "We appreciate your patience as we build out the tool. If you see any glaring issues, please reach out to us at"
+    },
+    {
+      "type": "text",
+      "id": "member_support_email",
+      "label": "Support email",
+      "default": "info@crismethod.com"
+    },
+    {
+      "type": "text",
+      "id": "member_button_label",
+      "label": "Member popup button label",
+      "default": "got it!"
+    },
+    {
+      "type": "textarea",
+      "id": "non_member_message",
+      "label": "Non-member popup message",
+      "default": "The CRIS Method Analyzer is for CEO Club members only. Join the CEO Club to access the analyzer and organize and optimize your routine today!"
+    },
+    {
+      "type": "text",
+      "id": "join_block_label",
+      "label": "Join block label",
+      "default": "Join the CEO Club today!"
+    },
+    {
+      "type": "text",
+      "id": "non_member_button_label",
+      "label": "Join button label",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "non_member_button_link",
+      "label": "Join button link"
+    },
+    {
+      "type": "text",
+      "id": "fallback_join_url",
+      "label": "Fallback join URL",
+      "default": "https://crismethod.com/pages/ceoclub",
+      "info": "Used when Join button link is empty."
+    },
+    {
+      "type": "text",
+      "id": "login_block_label",
+      "label": "Login block label",
+      "default": "Already a part of the CEO Club?"
+    },
+    {
+      "type": "text",
+      "id": "login_button_label",
+      "label": "Login button label",
+      "default": "Log In"
+    },
+    {
+      "type": "text",
+      "id": "modal_accessibility_label",
+      "label": "Popup accessibility label",
+      "default": "Members only access required"
+    },
+    {
+      "type": "header",
+      "content": "Locked preview"
+    },
+    {
+      "type": "image_picker",
+      "id": "locked_preview_image",
+      "label": "Blurred preview image"
+    },
+    {
+      "type": "text",
+      "id": "preview_image_alt",
+      "label": "Preview image alt text",
+      "default": "CRIS Analyzer preview"
+    },
+    {
+      "type": "text",
+      "id": "preview_placeholder_text",
+      "label": "Preview placeholder text",
+      "default": "CRIS Analyzer Preview"
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background",
+      "default": "#faf8f5"
+    },
+    {
+      "type": "color",
+      "id": "modal_background",
+      "label": "Popup background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#222222"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_bg",
+      "label": "Primary button background",
+      "default": "#583529"
+    },
+    {
+      "type": "color",
+      "id": "primary_button_text",
+      "label": "Primary button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_bg",
+      "label": "Secondary button background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_text",
+      "label": "Secondary button text",
+      "default": "#583529"
+    },
+    {
+      "type": "color",
+      "id": "secondary_button_border",
+      "label": "Secondary button border",
+      "default": "#583529"
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "CRIS Routine Analyzer"
+    }
+  ]
+}
+{% endschema %}
+
+{% style %}
+  #cris-analyzer-section-{{ section.id }} {
+    position: relative;
+    padding-top: {{ section.settings.section_padding_top }}px;
+    padding-bottom: {{ section.settings.section_padding_bottom }}px;
+    background: {{ section.settings.background_color }};
+    min-height: 480px;
+  }
+
+  #cris-analyzer-section-{{ section.id }}.cris-analyzer--locked {
+    overflow: hidden;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__preview {
+    min-height: 480px;
+    filter: blur(6px);
+    pointer-events: none;
+    user-select: none;
+    transform: scale(1.02);
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__placeholder {
+    width: 100%;
+    min-height: 480px;
+    display: grid;
+    place-items: center;
+    color: {{ section.settings.text_color }};
+    background: linear-gradient(135deg, #f2eee9 0%, #e9e4dd 100%);
+    font-size: 24px;
+    letter-spacing: 0.3px;
+    text-align: center;
+    padding: 24px;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__overlay {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.34);
+    padding: 20px;
+    z-index: 2;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__overlay--member {
+    z-index: 3;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__modal {
+    max-width: 720px;
+    width: 100%;
+    text-align: center;
+    background: {{ section.settings.modal_background }};
+    border: 1px solid #e9e3da;
+    border-radius: 12px;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.12);
+    padding: 28px 24px;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__message {
+    margin: 0 0 15px;
+    color: {{ section.settings.text_color }};
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__actions {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: stretch;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__actions--single {
+    justify-content: center;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__action-block {
+    flex: 1 1 260px;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__actions--single .cris-analyzer-lock__action-block {
+    flex: 0 1 auto;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__action-label {
+    margin: 0 0 15px;
+    color: {{ section.settings.text_color }};
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 160px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    background: {{ section.settings.primary_button_bg }};
+    color: {{ section.settings.primary_button_text }};
+    border: 1px solid {{ section.settings.primary_button_bg }};
+    transition: opacity 0.2s ease, background 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__cta:hover {
+    opacity: 0.85;
+    color: {{ section.settings.primary_button_text }};
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__cta--secondary {
+    background: {{ section.settings.secondary_button_bg }};
+    color: {{ section.settings.secondary_button_text }};
+    border: 1px solid {{ section.settings.secondary_button_border }};
+  }
+
+  #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__cta--secondary:hover {
+    color: {{ section.settings.secondary_button_text }};
+  }
+
+  p.cris-analyzer-lock__message {
+    margin-bottom: 15px !important;
+  }
+  .cris-analyzer-lock__modal {
+    position: relative;
+    padding-top: 38px !important;
+}
+.cris-analyzer-lock__modal button.cris-analyzer-lock__close {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+  @media (max-width: 767px) {
+    #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__actions {
+      display: block;
+    }
+
+    #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__action-block + .cris-analyzer-lock__action-block {
+      margin-top: 20px;
+    }
+
+    #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__message,
+    #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__action-label {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+	 #cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__modal--member {
+  position: relative;
+  padding-top: 52px;
+}
+
+#cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 999px;
+  background: transparent;
+  color: {{ section.settings.text_color }};
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+}
+
+#cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__close span {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+#cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  opacity: 1;
+}
+
+#cris-analyzer-section-{{ section.id }} .cris-analyzer-lock__close:focus-visible {
+  outline: 2px solid {{ section.settings.primary_button_bg }};
+  outline-offset: 2px;
+}
+  }
+{% endstyle %}

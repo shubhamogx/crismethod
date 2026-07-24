@@ -1,0 +1,202 @@
+<script>
+(function () {
+  const MEMBERSHIP_TYPE = 'subscription';
+  let allowNextAdd = false;
+  let isCleaning = false;
+
+  function isMembershipItem(item) {
+    if (!item) return false;
+    return (item.product_type || '').toLowerCase().trim() === MEMBERSHIP_TYPE;
+  }
+
+  function isPhysicalItem(item) {
+    if (!item) return false;
+    const type = (item.product_type || '').toLowerCase().trim();
+    if (!type) return false;
+    return item.requires_shipping === true && !isMembershipItem(item);
+  }
+
+  function showError(message) {
+    alert(message);
+  }
+
+  async function refreshCart() {
+    const res = await fetch('/cart.js');
+    return res.json();
+  }
+
+  function getProductMeta(el) {
+    const form = el
+      ? el.closest('form[data-type="add-to-cart-form"]') || el.closest('form[action*="/cart/add"]')
+      : null;
+
+    const activeForm = form || document.querySelector('form[data-type="add-to-cart-form"]');
+    const meta = document.querySelector('[data-product-meta]');
+
+    const productType = (
+      (activeForm && activeForm.dataset.productType) ||
+      (meta && meta.dataset.productType) ||
+      ''
+    ).toLowerCase().trim();
+
+    const requiresShipping = (
+      (activeForm && activeForm.dataset.requiresShipping) ||
+      (meta && meta.dataset.requiresShipping) ||
+      'false'
+    ) === 'true';
+
+    return {
+      product_type: productType,
+      requires_shipping: requiresShipping
+    };
+  }
+
+  function isCartMutationUrl(url) {
+    if (!url) return false;
+    const u = String(url);
+    return u.indexOf('/cart/add') !== -1 || u.indexOf('/cart/change') !== -1;
+  }
+
+  async function removeMembershipItems(cart) {
+    const membershipItems = cart.items.filter(isMembershipItem);
+    for (let i = 0; i < membershipItems.length; i++) {
+      await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: membershipItems[i].key, quantity: 0 })
+      });
+    }
+    return refreshCart();
+  }
+
+  // Physical product wins — remove membership, keep physical + free gifts
+  async function enforceCartRules(cart) {
+    if (isCleaning) return cart;
+
+    const hasMembership = cart.items.some(isMembershipItem);
+    const hasPhysical = cart.items.some(isPhysicalItem);
+
+    if (!hasMembership || !hasPhysical) return cart;
+
+    isCleaning = true;
+    showError('Membership removed. Free gifts apply to physical product orders only.');
+    const updatedCart = await removeMembershipItems(cart);
+    isCleaning = false;
+
+    document.dispatchEvent(new CustomEvent('cart:refresh'));
+    return updatedCart;
+  }
+
+  async function handleUserAdd(el, action) {
+    const itemToAdd = getProductMeta(el);
+    if (!itemToAdd) return;
+
+    const cart = await refreshCart();
+    const hasMembership = cart.items.some(isMembershipItem);
+    const hasPhysical = cart.items.some(isPhysicalItem);
+    const addingMembership = isMembershipItem(itemToAdd);
+    const addingPhysical = isPhysicalItem(itemToAdd);
+
+    // Block: cannot add membership when physical is in cart
+    if (addingMembership && hasPhysical) {
+      showError('Please remove physical products from your cart before adding membership.');
+      return;
+    }
+
+    // Allow physical: remove membership first (free gift goes with physical)
+    if (addingPhysical && hasMembership) {
+      showError('Membership will be removed. Free gifts apply to physical products only.');
+      await removeMembershipItems(cart);
+    }
+
+    allowNextAdd = true;
+    action();
+
+    setTimeout(function () {
+      allowNextAdd = false;
+      refreshCart().then(enforceCartRules);
+    }, 2000);
+  }
+
+  function isAtcButton(el) {
+    return el && el.closest(
+      '[data-atc-form], [data-action-atc], button[name="add"], .t4s-product-form__submit'
+    );
+  }
+
+  document.addEventListener('click', function (e) {
+    if (allowNextAdd) return;
+
+    const btn = isAtcButton(e.target);
+    if (!btn || btn.disabled || btn.getAttribute('aria-disabled') === 'true') return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    e.stopPropagation();
+
+    handleUserAdd(btn, function () { btn.click(); });
+  }, true);
+
+  document.addEventListener('submit', function (e) {
+    if (allowNextAdd) return;
+
+    const form = e.target.closest('form[data-type="add-to-cart-form"], form[action*="/cart/add"]');
+    if (!form) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    e.stopPropagation();
+
+    handleUserAdd(form, function () { form.requestSubmit(); });
+  }, true);
+
+  // Clean up if Gift Pro adds physical + gift while membership still in cart
+  const originalFetch = window.fetch;
+  window.fetch = function (url, options) {
+    const urlStr = typeof url === 'string' ? url : (url && url.url) || '';
+
+    return originalFetch.apply(this, arguments).then(function (response) {
+      if (response.ok && isCartMutationUrl(urlStr) && !allowNextAdd) {
+        return refreshCart().then(function (cart) {
+          return enforceCartRules(cart).then(function () {
+            return response;
+          });
+        });
+      }
+      return response;
+    });
+  };
+
+  function watchCartDrawer() {
+    const cartItems = document.querySelector('[data-cart-items]');
+    if (!cartItems || cartItems.dataset.membershipGuardWatched) return;
+    cartItems.dataset.membershipGuardWatched = 'true';
+
+    const observer = new MutationObserver(function () {
+      if (!isCleaning) {
+        refreshCart().then(enforceCartRules);
+      }
+    });
+
+    observer.observe(cartItems, { childList: true, subtree: true });
+  }
+
+  watchCartDrawer();
+  document.addEventListener('DOMContentLoaded', watchCartDrawer);
+
+  document.addEventListener('click', function (e) {
+    const checkoutBtn = e.target.closest('[name="checkout"], .t4s-btn__checkout, a[href*="/checkout"]');
+    if (!checkoutBtn) return;
+
+    refreshCart().then(function (cart) {
+      if (cart.items.some(isMembershipItem) && cart.items.some(isPhysicalItem)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showError('Membership and physical products must be purchased separately.');
+      }
+    });
+  }, true);
+
+  refreshCart().then(enforceCartRules);
+})();
+</script>

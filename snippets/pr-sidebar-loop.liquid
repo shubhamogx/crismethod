@@ -1,0 +1,83 @@
+{%- liquid
+  assign pr_url = product.url
+  assign placeholder_img = settings.placeholder_img
+  assign image = product.featured_media | default: placeholder_img
+-%}
+
+<div class="t4s_complimentary__product t4s-row t4s-space-item-inner t4s-widget__pr">
+  <div class="t4s-col-item t4s-col t4s-widget_img_pr">
+    {%- if image != blank -%}
+      <a
+        class="t4s-d-block t4s-pr t4s-oh t4s_ratio t4s-bg-11"
+        href="{{ pr_url }}"
+        style="background: url({{ image | image_url: width: 1 }});{{ imgatt }}--aspect-ratioapt: {{ image.aspect_ratio | default: 1 }}"
+      >
+        <img
+          class="lazyloadt4s"
+          data-src="{{ image | image_url: width: 1 }}"
+          data-widths="[100,200,400,600,700]"
+          data-optimumx="2"
+          data-sizes="auto"
+          src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+          alt="{{ image.alt | escape }}"
+        >
+      </a>
+    {%- endif -%}
+  </div>
+  <div class="t4s-col-item t4s-col t4s-widget_if_pr">
+    <a href="{{ pr_url }}" class="t4s-d-block t4s-widget__pr-title">{{ product.title }}</a>
+    {%- render 'product-price',
+      class_price: 't4s-widget__pr-price',
+      product: product,
+      price_varies_style: price_varies_style,
+      type: 'card',
+      isGrouped: false
+    -%}
+  </div>
+
+  {%- if t4s_complimentary_product and show_complimentary and product.available and product.has_only_default_variant -%}
+    <a
+      data-tooltip="top" title="{{ 'products.product.add_to_cart' | t }}"
+      href="#t4s_pr_url"
+      data-atc-selector
+      data-tooltip=""
+      data-id="{{ product.id }}"
+      rel="nofollow"
+      data-variant-id="{{ product.first_available_variant.id }}"
+      data-action-atc=""
+      class="t4s-pr-item-btn t4s-pr-addtocart"
+      dat-qty="1"
+      ><span class="t4s-svg-pr-icon">
+        <svg viewBox="0 0 24 24">
+          <use xlink:href="#t4s-icon-atc"></use>
+        </svg></span
+    ></a>
+  {%- elsif t4s_complimentary_product
+    and show_complimentary
+    and product.available
+    and product.has_only_default_variant == false
+  -%}
+    <a
+      data-tooltip="top" title="{{ 'products.product_card.quick_add' | t }}"
+      href="{{ product.url }}"
+      class="t4s-pr-item-btn t4s-pr-addtocart"
+      rel="nofollow"
+      data-action-quickshop
+      data-id="{{ product.id }}"
+      ><span class="t4s-svg-pr-icon">
+        <svg viewBox="0 0 24 24">
+          <use xlink:href="#t4s-icon-atc"></use>
+        </svg></span
+    ></a>
+  {%- elsif t4s_complimentary_product and show_complimentary -%}
+    <div class="t4s-pr-item-btn t4s-pr-addtocart dis" data-tooltip="top" title="Sold out"}>
+      <span class="t4s-svg-pr-icon">
+        <svg viewBox="0 0 24 24">
+          <use xlink:href="#t4s-icon-atc"></use>
+        </svg>
+      </span>
+    </div>
+  {%- endif %}
+</div>

@@ -1,0 +1,73 @@
+/*-----------------------------------------------------------------------------/
+/ Custom Theme CSS
+/-----------------------------------------------------------------------------*/
+/*---------------- Global Custom CSS -------------------*/
+.t4s-col-inner.t4s-ver-center-true.t4s-text-lg-start.t4s-text-md-start.t4s-text-start {
+  border-radius: 25px;
+}
+.t4s-footer-wrap.t4s-bottom-bar.t4s-row.is--footer-collapse-.t4s-gx-md-30.t4s-gy-md-0.t4s-gx-0.t4s-gy-0 {
+    align-items: center;
+}
+.t4s-swatch__title {
+    font-size: 15px;
+    text-transform: capitalize;
+    font-weight: 300;
+    color: #571819;
+}
+.t4s-col-inner.t4s-ver-center-false.t4s-text-lg-start.t4s-text-md-start.t4s-text-start {
+    border-radius: 25px;
+}
+#t4s-backToTop {
+    bottom: 100px;
+}
+h3.t4s-product-title {
+    font-family: 'Poppins' !important;
+}
+
+/*---------------- Custom CSS for only desktop -------------------*/
+@media (min-width: 1025px) {
+  
+}
+
+/*---------------- Custom CSS for tablet, mobile -------------------*/
+@media (max-width: 1024px) {
+  
+}
+
+/*---------------- Custom CSS for only tablet -------------------*/
+@media (min-width: 768px) and (max-width: 1024px) {
+  
+}
+
+/*---------------- Custom CSS for only mobile -------------------*/
+@media (max-width: 767px){
+  .bl-bl_col_c394gb { order: 1; }
+  .bl-bl_col_nL76fw { order: 2; }
+
+  .bl-bl_col_A9RXp9 { order: 3; }
+  .bl-bl_col_dDDWG8 { order: 4; }
+
+  .bl-bl_col_XgPRXC { order: 5; }
+  .bl-bl_col_PFtwPf { order: 6; }
+
+  .bl-bl_col_Wb3Qap { order: 7; }
+  .bl-bl_col_Xc7HTV { order: 8; }
+
+.bl-bl_col_LwP3Ew { order: 1; }
+
+  .bl-bl_col_VmgazY { order: 2; }
+  .bl-bl_col_y7jJ8B { order: 3; }
+
+  .bl-bl_col_KWecet { order: 4; }
+  .bl-bl_col_CnwAtU { order: 5; }
+
+  .bl-bl_col_UFe7gf { order: 6; }
+  .bl-bl_col_kWcpRh { order: 7; }
+
+  .bl-bl_col_AKJDrN { order: 8; }
+  .bl-bl_col_giJATd { order: 9; }
+
+.t4s-product-btns, .t4s-product-btns2  {
+    display: none !important;
+}
+}

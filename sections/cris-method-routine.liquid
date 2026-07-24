@@ -1,0 +1,394 @@
+<section class="cris-routine-section">
+  <div class="page-width">
+
+    <div class="cris-routine-header">
+      <div class="cris-routine-header-left">
+        {% if section.settings.eyebrow != blank %}
+          <span class="cris-routine-eyebrow">
+            {{ section.settings.eyebrow }}
+          </span>
+        {% endif %}
+
+        <h2 class="cris-routine-heading">
+          {{ section.settings.heading }}
+        </h2>
+      </div>
+
+      <div class="cris-routine-header-right">
+        {{ section.settings.beta_text }}
+      </div>
+    </div>
+
+    <div class="cris-routine-grid">
+      {% for block in section.blocks %}
+        <div class="cris-routine-card" {{ block.shopify_attributes }}>
+
+          {% if block.settings.image != blank %}
+            <img
+              src="{{ block.settings.image | image_url: width: 1200 }}"
+              alt="{{ block.settings.title }}"
+              class="cris-routine-card-image"
+              loading="lazy"
+            >
+          {% endif %}
+
+          <div class="cris-routine-overlay"></div>
+
+          <div class="cris-routine-card-number">
+            {{ block.settings.number }}
+          </div>
+
+          <div class="cris-routine-card-content">
+            <h3>{{ block.settings.title }}</h3>
+
+            <p>
+              {{ block.settings.description }}
+            </p>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="cris-routine-footer">
+
+      <div class="cris-routine-footer-left">
+        <h4>
+          {{ section.settings.cta_heading }}
+        </h4>
+
+        {% if section.settings.cta_text != blank %}
+          <p>
+            {{ section.settings.cta_text }}
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="cris-routine-footer-right">
+        <a
+          href="{{ section.settings.button_link }}"
+          class="cris-routine-button"
+        >
+          {{ section.settings.button_text }}
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<style>
+
+.cris-routine-section{
+  padding:100px 0;
+  background:#ffffff;
+}
+
+.cris-routine-section .page-width{
+  max-width:1400px;
+  margin:0 auto;
+  padding:0 40px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.cris-routine-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 60px;
+    margin-bottom: 60px;
+}
+.cris-routine-header-left{
+  max-width:760px;
+}
+.cris-routine-eyebrow{
+  display:block;
+  margin-bottom:20px;
+  text-transform:uppercase;
+  letter-spacing:.15em;
+  font-size:12px;
+  color:#583529;
+  opacity:.8;
+}
+.cris-routine-heading {
+    margin: 0;
+    color: #571819;
+    font-size: 60px;
+    line-height: normal;
+    font-weight: 400;
+}
+.cris-routine-header-right {
+    color: #583529;
+    font-size: 16px;
+    text-align: right;
+    margin-bottom: 10px;
+}
+/* =========================
+   CARDS
+========================= */
+
+.cris-routine-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:24px;
+}
+.cris-routine-card {
+    position: relative;
+    min-height: 260px;
+    overflow: hidden;
+    border-radius: 34px;
+    background: #f4f1ee;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+
+.cris-routine-card-image{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.cris-routine-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(
+    90deg,
+    rgba(0,0,0,.55) 0%,
+    rgba(0,0,0,.25) 60%,
+    rgba(0,0,0,.20) 100%
+  );
+}
+.cris-routine-card-number{
+  position:absolute;
+  left:25px;
+  bottom:-30px;
+  font-size:180px;
+  line-height:1;
+  font-weight:300;
+  color:rgba(255,255,255,.45);
+  z-index:2;
+}
+.cris-routine-card-content {
+    position: relative;
+    padding: 45px;
+    max-width: 420px;
+    color: #fff;
+}
+.cris-routine-card-content h3 {
+    margin: 0 0 12px;
+    color: #fff;
+    font-size: 24px;
+    line-height: normal;
+}
+.cris-routine-card-content p {
+    margin: 0;
+    line-height: normal;
+}
+.cris-routine-footer{
+  margin-top:80px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:40px;
+}
+.cris-routine-footer-left h4 {
+    margin: 0 0 12px;
+    color: #583529;
+}
+.cris-routine-footer-left p {
+    margin: 0;
+    color: #583529;
+    opacity: .8;
+}
+.cris-routine-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:220px;
+  padding:18px 36px;
+  border-radius:999px;
+  background:#e0bbb5;
+  color:#583529;
+  font-weight:600;
+  transition:.3s ease;
+  cursor: pointer;
+}
+
+.cris-routine-button:hover{
+  transform:translateY(-2px);
+  opacity:.9;
+}
+
+/* =========================
+   TABLET
+========================= */
+
+@media screen and (max-width: 990px){
+
+  .cris-routine-header{
+    flex-direction:column;
+    gap:20px;
+    align-items: flex-start;
+    margin-bottom: 30px;
+  }
+  .cris-routine-header-right{
+    text-align:left;
+    margin-top:0;
+  }
+  .cris-routine-grid{
+    grid-template-columns:1fr;
+  }
+  .cris-routine-heading{
+    font-size:45px;
+  }
+  .cris-routine-footer{
+    flex-direction:column;
+    align-items:flex-start;
+    margin-top: 50px;
+    gap: 20px;
+  }
+
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media screen and (max-width: 767px){
+
+  .cris-routine-section{
+    padding:70px 0;
+  }
+  .cris-routine-section .page-width{
+    padding:0 20px;
+  }
+  .cris-routine-heading{
+    font-size:35px;
+  }
+  .cris-routine-card{
+    min-height:300px;
+  }
+  .cris-routine-card-number{
+    font-size:90px;
+    left:20px;
+    bottom:-10px;
+  }
+  .cris-routine-card-content{
+    margin-left:95px;
+    padding:30px;
+  }
+  .cris-routine-card-content h3{
+    font-size:24px;
+  }
+
+}
+
+</style>
+
+{% schema %}
+{
+  "name": "CRIS Method Routine",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "HOW IT WORKS"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Build Your CRIS Method Routine"
+    },
+    {
+      "type": "text",
+      "id": "beta_text",
+      "label": "Beta Text",
+      "default": "currently in beta."
+    },
+    {
+      "type": "text",
+      "id": "cta_heading",
+      "label": "CTA Heading",
+      "default": "READY TO GET STARTED?"
+    },
+    {
+      "type": "textarea",
+      "id": "cta_text",
+      "label": "CTA Description",
+      "default": "Complete your routine profile and receive personalized recommendations."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Let's Start"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "step",
+      "name": "Step Card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Card Image"
+        },
+        {
+          "type": "text",
+          "id": "number",
+          "label": "Number",
+          "default": "01"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Skin Type"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 4,
+  "presets": [
+    {
+      "name": "CRIS Method Routine",
+      "blocks": [
+        {
+          "type": "step"
+        },
+        {
+          "type": "step"
+        },
+        {
+          "type": "step"
+        },
+        {
+          "type": "step"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

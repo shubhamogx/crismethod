@@ -1,0 +1,212 @@
+<div id="global-popup-{{ section.id }}" class="gp-overlay">
+  <div class="gp-box">
+    <button type="button" class="gp-close">&times;</button>
+
+    <h2>{{ section.settings.heading }}</h2>
+    <p>{{ section.settings.text }}</p>
+
+    {% if section.settings.button_link != blank %}
+      <a href="{{ section.settings.button_link }}" class="gp-btn">
+        {{ section.settings.button_text }}
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  #global-popup-{{ section.id }}{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999999;
+    padding: 20px;
+  }
+
+  #global-popup-{{ section.id }} .gp-box{
+    background: #fff;
+    max-width: 520px;
+    width: 100%;
+    padding: 40px 30px;
+    border-radius: 16px;
+    text-align: center;
+    position: relative;
+  }
+
+  #global-popup-{{ section.id }} .gp-close{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0px;
+    right: -1px;
+    font-size: 22px;
+    width: 35px;
+    height: 35px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    background-color: #583529;
+  }
+
+  #global-popup-{{ section.id }} .gp-btn{
+    display: inline-block;
+    margin-top: 15px;
+    font-size: 16px;
+    padding: 12px 24px;
+    background: #583529;
+    color: #fefdf6;
+    border-radius: 9px;
+    text-decoration: none;
+  }
+  #global-popup-{{ section.id }} .gp-btn:hover{
+    opacity:.8;
+  }
+  #global-popup-global-popup .gp-box h2 {
+      color: #583529;
+      margin-bottom: 10px;
+  }
+  #global-popup-global-popup .gp-box p {
+      margin-bottom: 10px;
+      line-height: normal;
+  }
+</style>
+
+<script>
+(function() {
+  const popupKey = 'global_popup_seen_{{ section.id }}';
+  let popupTimer = null;
+
+  function getLosAngelesNowNumber() {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).formatToParts(new Date());
+
+    const map = {};
+    parts.forEach(function(part) {
+      if (part.type !== 'literal') map[part.type] = part.value;
+    });
+
+    return Number(
+      map.year + map.month + map.day + map.hour + map.minute + map.second
+    );
+  }
+
+  function isPopupExpired() {
+    const expiry = 20260606_235959;
+    return getLosAngelesNowNumber() > expiry;
+  }
+
+  function markPopupSeen() {
+    sessionStorage.setItem(popupKey, 'true');
+  }
+
+  function initGlobalPopup() {
+    const popup = document.getElementById('global-popup-{{ section.id }}');
+    const closeBtn = popup ? popup.querySelector('.gp-close') : null;
+    const ctaBtn = popup ? popup.querySelector('.gp-btn') : null;
+    const enabled = {{ section.settings.enable_popup | json }};
+    const delay = {{ section.settings.delay | default: 3 }};
+
+    if (!popup || !enabled) return;
+
+    if (isPopupExpired()) {
+      popup.style.display = 'none';
+      return;
+    }
+
+    if (sessionStorage.getItem(popupKey) === 'true') {
+      popup.style.display = 'none';
+      return;
+    }
+
+    if (closeBtn && !closeBtn.dataset.bound) {
+      closeBtn.addEventListener('click', function() {
+        markPopupSeen();
+        popup.style.display = 'none';
+      });
+      closeBtn.dataset.bound = 'true';
+    }
+
+    if (ctaBtn && !ctaBtn.dataset.bound) {
+      ctaBtn.addEventListener('click', function() {
+        markPopupSeen();
+      });
+      ctaBtn.dataset.bound = 'true';
+    }
+
+    if (popupTimer) return;
+
+    popupTimer = setTimeout(function() {
+      if (!isPopupExpired() && sessionStorage.getItem(popupKey) !== 'true') {
+        popup.style.display = 'flex';
+        markPopupSeen();
+      }
+      popupTimer = null;
+    }, delay * 1000);
+  }
+
+  document.addEventListener('DOMContentLoaded', initGlobalPopup);
+
+  document.addEventListener('shopify:section:load', function(event) {
+    if (event.target && event.target.querySelector('#global-popup-{{ section.id }}')) {
+      initGlobalPopup();
+    }
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Global Popup",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_popup",
+      "label": "Enable Popup",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "TODAY ONLY"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "Join the Founder's Circle and get a FREE mystery gift!"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Join Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "range",
+      "id": "delay",
+      "label": "Delay (seconds)",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "default": 3
+    }
+  ]
+}
+{% endschema %}

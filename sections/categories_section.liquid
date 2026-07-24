@@ -1,0 +1,791 @@
+<!-- sections/categorfies_section.liquid -->
+
+{{ 'slider-settings.css' | asset_url | stylesheet_tag }}
+{{ 'pre_flickityt4s.min.css' | asset_url | stylesheet_tag }}
+{{ 'categories-section.css' | asset_url | stylesheet_tag }}
+{% # theme-check-disable %}
+{%- liquid
+  assign sid = section.id
+  assign se_stts = section.settings
+  assign stt_layout = se_stts.layout
+  assign stt_image_bg = se_stts.image_bg
+
+  if stt_layout == 't4s-se-container'
+    assign html_layout = '<div class="t4s-container">__</div></div>' | split: '__'
+  elsif stt_layout == 't4s-container-wrap'
+    assign html_layout = '<div class="t4s-container">__</div>' | split: '__'
+  else
+    assign html_layout = '__' | split: '__'
+  endif
+
+  assign t4s_se_class = 't4s_nt_se_' | append: sid
+  if se_stts.use_cus_css and se_stts.code_cus_css != blank
+    render 'se_cus_css', code_cus_css: se_stts.code_cus_css, t4s_se_class: t4s_se_class
+  endif
+  if section.settings.center_slide
+    echo 't4s-carousel-center.css' | asset_url | stylesheet_tag
+  endif
+-%}
+
+{% # theme-check-enable %}
+<div
+  class="t4s-section-inner t4s_nt_se_{{ sid }} t4s_se_{{ sid }} {{ stt_layout }} {% if stt_image_bg != blank and stt_layout != 't4s-se-container' %} t4s-has-imgbg lazyloadt4s {% endif %}"
+  {% if stt_image_bg != blank and stt_layout != 't4s-se-container' %}
+    data-bgset="{{ stt_image_bg | image_url: width: 1 }}" data-sizes="auto" data-optimumx="2"
+  {% endif %}
+
+  {% render 'section_style', se_stts: se_stts %}
+>
+  {{- html_layout[0] -}}
+  {%- if stt_layout == 't4s-se-container' -%}
+    <div
+      class="t4s-container-inner {% if stt_image_bg != blank %} t4s-has-imgbg lazyloadt4s {% endif %}"
+      {% if stt_image_bg != blank %}
+        data-bgset="{{ stt_image_bg | image_url: width: 1 }}" data-sizes="auto" data-optimumx="2"
+      {% endif %}
+    >
+  {%- endif -%}
+  {%- render 'section_tophead', se_stts: {{se_stts}} -%}
+
+  <div
+    class="t4s-categories flickityt4s t4s-d-flex t4s-justify-content-center t4s-w-100 t4s-gx-{{ se_stts.space_h_item_mb }} t4s-gx-md-{{ se_stts.space_h_item }} {% if se_stts.nav_dot %} t4s-dots-style-{{ se_stts.dot_owl }} t4s-dots-cl-{{ se_stts.dots_cl }} t4s-dots-round-{{ se_stts.dots_round }} t4s-dots-hidden-mobile-{{ se_stts.dots_hidden_mobile }} t4s-dots-hidden-mobile-{{ se_stts.dots_hidden_mobile }} {% endif %}"
+    data-flickityt4s-js='{"isSimple": true, "setPrevNextButtons":true, "freeScroll": false, "imagesLoaded": 0, "adaptiveHeight": 0, "contain": 1, "groupCells": "100%", "dragThreshold": 5, "cellAlign": "center", "wrapAround": 0, "percentPosition": 1, "pageDots": true}'
+    style="
+      --item-width-desktop: {{ se_stts.limit_desktop}};
+      --item-width-mobile: {{ se_stts.limit_mobile }};
+      --item-width-tablet: {{ se_stts.limit_tablet  }};
+      --space-dots: {{ se_stts.dots_space }}px;
+    "
+  >
+    {%- for block in section.blocks -%}
+      {%- liquid
+        assign image_item = block.settings.image | default: collection.metafields.theme.featured_image_collection.value | default: collection.image | default: collection.products.first.featured_image
+        assign link_item = block.settings.collection | default: collection.url
+      -%}
+
+      {%- if block.type == 'view_all' -%}
+        {%- continue -%}
+      {%- endif -%}
+
+      <div class="t4s-categories-inner block-{{ block.id }} t4s-col-item">
+        <a
+          class="t4s-d-flex t4s-flex-column t4s-align-items-center"
+          href="{{ link_item.url | default: '#' }}"
+          data-cacl-slide
+        >
+          {%- if image_item != blank -%}
+            <div class="t4s-collection-item-container block-{{ block.id }}">
+              {{
+                image_item
+                | image_url: width: image_item.width
+                | image_tag:
+                  loading: 'lazy',
+                  width: block.settings.collection.image.width,
+                  height: block.settings.collection.image.width,
+                  class: 't4s-collection-item-image t4s-oh',
+                  sizes: 'auto',
+                  widths: '100,200,400,600,700,800,900,1000,1200,1250,1400,1600'
+              }}
+            </div>
+
+          {%- elsif block.settings.collection.image -%}
+            <div class="t4s-collection-item-container block-{{ block.id }}">
+              {{
+                block.settings.collection.image
+                | image_url: width: block.settings.collection.image.width
+                | image_tag:
+                  loading: 'lazy',
+                  width: block.settings.collection.image.width,
+                  height: block.settings.collection.image.height,
+                  class: 't4s-collection-item-image t4s-oh',
+                  sizes: 'auto',
+                  widths: '100,200,400,600,700,800,900,1000,1200,1250,1400,1600'
+              }}
+            </div>
+          {%- else -%}
+            <div class="t4s-collection-item-container block-{{ block.id }}">
+              {{ 'image' | placeholder_svg_tag: 't4s-collection-item-image t4s-oh' }}
+            </div>
+          {%- endif -%}
+
+          {%- if block.settings.title != '' and block.settings.collection.title == null -%}
+            <div class="t4s-text-center t4s-item-title">{{ block.settings.title }}</div>
+            {%- if section.settings.t4s_show_item_number -%}
+              <div class="t4s-show-item-number">
+                {{ block.settings.collection.all_products_count }}
+                {{ 'products.product.items' | t }}
+              </div>
+            {%- endif -%}
+          {%- elsif block.settings.collection.title != null -%}
+            <div class="t4s-text-center t4s-item-title">{{ block.settings.collection.title | default: 'Title' }}</div>
+            {%- if section.settings.t4s_show_item_number -%}
+              <div class="t4s-show-item-number">
+                {{ block.settings.collection.all_products_count }}
+                {{ 'products.product.items' | t }}
+              </div>
+            {%- endif -%}
+          {%- endif -%}
+        </a>
+      </div>
+
+      <style>
+        .block-{{ block.id }}::before {
+          content: '{{  block.settings.title_badge }}';
+          position: absolute;
+          width: 70px;
+          height: 30px;
+          background-color: {{ block.settings.badge_color }};
+          top: 10%;
+          display: {%- if block.settings.show_badge -%}flex;{%- else -%}none;{%- endif -%}
+          justify-content: center;
+          align-items: center;
+          border-radius: 20px;
+          right: 10%;
+          color: {{ block.settings.text_badge_color }};
+        }
+
+        .t4s-categories .t4s-item-title {
+          line-height: normal;
+          padding-top: 12px;
+          font-size: {{ se_stts.font_size_item | plus: 0.00 | divided_by: 10 }}rem;
+          color: {{ block.settings.title_cl }};
+          font-weight: 500;
+        }
+
+    
+        .t4s-categories .t4s-item-title:hover {
+          color: var(--link-color-hover );
+        }
+
+        .t4s-collection-item-container.block-{{ block.id }} {
+          border-radius: 50%;
+          width: 100%;
+          background-color: {{ block.settings.bgr-color-item }};
+          aspect-ratio: 1;
+          display: flex;
+        }
+
+        @media(max-width: 767px) {
+        .block-{{ block.id }}::before {
+          width: 50px;
+          height: 23px;
+          top: 5%;
+          right: 0%;
+          font-size: 12px;
+        }
+
+      </style>
+
+    {%- endfor -%}
+    {% assign block = section.blocks | where: 'type', 'view_all' | first %}
+
+    {%- if block -%}
+      <div class="t4s-d-flex t4s-flex-column t4s-view-all-container t4s-align-items-center t4s-col-item">
+        <div class="t4s-collection-item-container block-{{ block.id }}" style="background-color:  #fff">
+          <a
+            href="{{ block.settings.item_link | default: '#' }}"
+            class="t4s-view-all t4s-d-flex t4s-align-items-center t4s-justify-content-center t4s-collection-item-image"
+          >
+            <svg
+              class="svg-view-all"
+              width="71"
+              height="71"
+              viewBox="0 0 71 71"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M48.8326 43.2457C48.5318 43.5031 48.1362 43.6496 47.6956 43.6153C46.8438 43.5491 46.1936 42.7893 46.2599 41.9374L47.5256 25.6642L31.2524 24.3985C30.4005 24.3322 29.7504 23.5724 29.8166 22.7206C29.8829 21.8687 30.6427 21.2186 31.4945 21.2848L49.3246 22.6716C50.1764 22.7379 50.8266 23.4977 50.7603 24.3495L49.3735 42.1796C49.3393 42.6202 49.1333 42.9884 48.8326 43.2457Z" fill="#292D32"/>
+              <path d="M49.9505 25.6458L23.3097 48.4416C22.6607 48.9969 21.662 48.9192 21.1067 48.2702C20.5513 47.6212 20.629 46.6225 21.278 46.0672L47.9188 23.2714C48.5678 22.7161 49.5666 22.7938 50.1219 23.4428C50.6772 24.0918 50.5995 25.0905 49.9505 25.6458Z" fill="#292D32"/>
+            </svg>
+          </a>
+        </div>
+
+        {%- if block.settings.title -%}
+          <a href="{{ block.settings.item_link | default: '#' }}">
+            <div class="t4s-justify-content-center t4s-text-center t4s-item-title">{{ block.settings.title }}</div>
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+
+  {%- if stt_layout == 't4s-se-container' -%}
+    </div>
+  {%- endif -%}
+  {{- html_layout[1] -}}
+</div>
+
+<style>
+  .t4s-collection-item-image {
+    object-fit: contain;
+    width: 100%;
+    aspect-ratio: 1/1;
+    padding: 30px;
+    }
+
+    .t4s-categories-inner {
+        width: calc(100% / var(--item-width-mobile));
+    }
+
+    .t4s-view-all-container {
+        width: calc(100% / var(--item-width-mobile));
+    }
+    .t4s-collection-item-container.block-{{ block.id }} {
+      width: 100%;
+      border-radius: 50%;
+    }
+
+    .svg-view-all {
+      width: 50px;
+      height: auto;
+    }
+
+    .t4s-categories .t4s-show-item-number {
+      color: #696969;
+    }
+
+
+    
+    .t4s-categories-inner.block-{{ block.id }} .t4s-item-title {
+      color: var(--title-color);
+
+    }
+
+  /* --- TABLET --- */
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .t4s-categories-inner {
+        width: calc(100% / var(--item-width-tablet));
+    }
+    .t4s-collection-item-image {
+      padding: 50px;
+    }
+    .t4s-view-all-container {
+        width: calc(100% / var(--item-width-tablet));
+    }
+
+    .t4s-collection-item-container.block-{{ block.id }} {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  @media (min-width: 1024px) {
+
+    .t4s-collection-item-container.block-{{ block.id }} {
+      width: 100%;
+    }
+
+    .cate-{{section.id}} .t4s-col-item {
+    padding-right: calc(var(--ts-gutter-x) * .72) !important;
+    padding-left: calc(var(--ts-gutter-x) * .72) !important;
+    }
+
+    .t4s-categories-inner {
+        width: calc(100% / var(--item-width-desktop));
+    }
+
+    .t4s-view-all-container {
+        width: calc(100% / var(--item-width-desktop));
+    }
+
+    .t4s-collection-item-image {
+        width: 100%;
+        padding: {{section.settings.p_item_des}}px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Categories Section",
+  "tag": "section",
+  "class": "t4s-section t4s_bk_flickity t4s-section-all t4s_tp_cd t4s-categories_section t4s_tp_istope",
+  "settings": [
+    {
+      "type": "header",
+      "content": "1. Heading options"
+    },
+    {
+      "type": "text",
+      "id": "top_heading",
+      "label": "+ Heading",
+      "default": "Categories"
+    },
+    {
+      "type": "select",
+      "id": "design_heading",
+      "label": "+ Design heading",
+      "default": "1",
+      "options": [
+        {
+          "value": "1",
+          "label": "Design 01"
+        },
+        {
+          "value": "2",
+          "label": "Design 02"
+        },
+        {
+          "value": "3",
+          "label": "Design 03"
+        },
+        {
+          "value": "4",
+          "label": "Design 04"
+        },
+        {
+          "value": "5",
+          "label": "Design 05"
+        },
+        {
+          "value": "6",
+          "label": "Design 06 (with line-awesome)"
+        },
+        {
+          "value": "7",
+          "label": "Design 07"
+        },
+        {
+          "value": "8",
+          "label": "Design 08"
+        },
+        {
+          "value": "9",
+          "label": "Design 09"
+        },
+        {
+          "value": "10",
+          "label": "Design 10"
+        },
+        {
+          "value": "11",
+          "label": "Design 11"
+        },
+        {
+          "value": "12",
+          "label": "Design 12"
+        },
+        {
+          "value": "13",
+          "label": "Design 13"
+        },
+        {
+          "value": "14",
+          "label": "Design 14"
+        },
+        {
+          "value": "15",
+          "label": "Design 15"
+        },
+        {
+          "value": "16",
+          "label": "Design 16"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "heading_align",
+      "label": "+ Heading align",
+      "default": "t4s-text-center",
+      "options": [
+        {
+          "value": "t4s-text-start",
+          "label": "Default"
+        },
+        {
+          "value": "t4s-text-center",
+          "label": "Center"
+        }
+      ]
+    },
+
+    {
+      "type": "text",
+      "id": "icon_heading",
+      "label": "Enter an icon name",
+      "info": "Only used for design 6 [LineAwesome](https://kalles.the4.co/font-lineawesome/)",
+      "default": "las la-gem"
+    },
+    {
+      "type": "textarea",
+      "id": "top_subheading",
+      "label": "+ Subheading"
+    },
+    {
+      "type": "number",
+      "id": "tophead_mb",
+      "label": "+ Space bottom (px)",
+      "info": "The vertical spacing between heading and content",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "2. General options"
+    },
+    {
+      "type": "range",
+      "id": "font_size_item",
+      "label": "Font Size Item",
+      "min": 16,
+      "max": 50,
+      "step": 1,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "limit_desktop",
+      "min": 2,
+      "max": 7,
+      "step": 1,
+      "label": "Number Of Item Displayed (Desktop)",
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "limit_tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Number Of Item Displayed (Tablet)",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "limit_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "label": "Number Of Item Displayed (Mobile)",
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "space_h_item",
+      "label": "Space horizontal items",
+      "default": "30",
+      "options": [
+        {
+          "value": "0",
+          "label": "0"
+        },
+        {
+          "value": "2",
+          "label": "2px"
+        },
+        {
+          "value": "4",
+          "label": "4px"
+        },
+        {
+          "value": "6",
+          "label": "6px"
+        },
+        {
+          "value": "8",
+          "label": "8px"
+        },
+        {
+          "value": "10",
+          "label": "10px"
+        },
+        {
+          "value": "20",
+          "label": "20px"
+        },
+        {
+          "value": "30",
+          "label": "30px"
+        }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "space_h_item_mb",
+      "label": "Space horizontal items (Mobile)",
+      "default": "10",
+      "options": [
+        {
+          "value": "0",
+          "label": "0"
+        },
+        {
+          "value": "2",
+          "label": "2px"
+        },
+        {
+          "value": "4",
+          "label": "4px"
+        },
+        {
+          "value": "6",
+          "label": "6px"
+        },
+        {
+          "value": "8",
+          "label": "8px"
+        },
+        {
+          "value": "10",
+          "label": "10px"
+        },
+        {
+          "value": "20",
+          "label": "20px"
+        },
+        {
+          "value": "30",
+          "label": "30px"
+        }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "p_item_des",
+      "label": "Padding item desktop",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "default": 30,
+      "unit": "px"
+    },
+    {
+      "type": "checkbox",
+      "id": "nav_dot",
+      "label": "Use page dots",
+      "info": "Creates and show page dots",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "dots_round",
+      "label": "Enable round dots",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "dots_space",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "label": "Space among dots",
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "dots_hidden_mobile",
+      "label": "Hidden dots on mobile ",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "t4s_show_item_number",
+      "label": "Show item in collection",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "3. Design options"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "default": "t4s-container-wrap",
+      "label": "Layout",
+      "options": [
+        { "value": "t4s-se-container", "label": "Container" },
+        { "value": "t4s-container-wrap", "label": "Wrapped container" },
+        { "value": "t4s-container-fluid", "label": "Full width" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "cl_bg",
+      "label": "Background"
+    },
+    {
+      "type": "color_background",
+      "id": "cl_bg_gradient",
+      "label": "Background gradient"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_bg",
+      "label": "Background image"
+    },
+    {
+      "type": "text",
+      "id": "mg",
+      "label": "Margin",
+      "info": "Margin top, margin right, margin bottom, margin left. If you not use to blank",
+      "default": ",,50px,",
+      "placeholder": ",,50px,"
+    },
+    {
+      "type": "text",
+      "id": "pd",
+      "label": "Padding",
+      "info": "Padding top, padding right, padding bottom, padding left. If you not use to blank",
+      "default": ",,50px,",
+      "placeholder": "50px,,50px,"
+    },
+
+    {
+      "type": "header",
+      "content": "+ Design Tablet Options"
+    },
+    {
+      "type": "text",
+      "id": "mg_tb",
+      "label": "Margin",
+      "placeholder": ",,50px,"
+    },
+    {
+      "type": "text",
+      "id": "pd_tb",
+      "label": "Padding",
+      "placeholder": ",,50px,"
+    },
+    {
+      "type": "header",
+      "content": "+ Design Mobile Options"
+    },
+    {
+      "type": "text",
+      "id": "mg_mb",
+      "label": "Margin",
+      "default": ",,30px,",
+      "placeholder": ",,50px,"
+    },
+    {
+      "type": "text",
+      "id": "pd_mb",
+      "label": "Padding",
+      "placeholder": ",,50px,"
+    },
+    {
+      "type": "header",
+      "content": "4. Custom css"
+    },
+    {
+      "id": "use_cus_css",
+      "type": "checkbox",
+      "label": "Use custom css",
+      "default": false,
+      "info": "If you want custom style for this section."
+    },
+    {
+      "id": "code_cus_css",
+      "type": "textarea",
+      "label": "Code custom css",
+      "info": "Use selector. SectionID to style css"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection_item",
+      "name": "Collection Item",
+      "settings": [
+        {
+          "type": "header",
+          "content": "1. General option"
+        },
+        {
+          "id": "collection",
+          "type": "collection",
+          "label": "Collection"
+        },
+        {
+          "id": "image",
+          "type": "image_picker",
+          "label": "Choose Image"
+        },
+        {
+          "type": "color",
+          "id": "bgr-color-item",
+          "label": "Background color item",
+          "default": "#fefefe"
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "label": "Collection Label"
+        },
+        {
+          "type": "color",
+          "id": "title_cl",
+          "label": "Title color",
+          "default": "#222222"
+        },
+        {
+          "type": "header",
+          "content": "2. Badge option"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_badge",
+          "label": "Show badge",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "title_badge",
+          "label": "Badge label",
+          "default": "10% off"
+        },
+        {
+          "type": "color",
+          "id": "text_badge_color",
+          "label": "Text color",
+          "default": "#fff"
+        },
+        {
+          "type": "color",
+          "id": "badge_color",
+          "label": "Badge color",
+          "default": "#000"
+        }
+      ]
+    },
+    {
+      "type": "view_all",
+      "name": "View All",
+      "limit": 1,
+      "settings": [
+        {
+          "id": "title",
+          "type": "text",
+          "label": "View All Title"
+        },
+        {
+          "id": "item_link",
+          "type": "url",
+          "label": "View All Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Categories Section",
+      "category": "03. Collection(s)",
+      "blocks": [
+        {
+          "type": "collection_item"
+        },
+        {
+          "type": "collection_item"
+        },
+        {
+          "type": "collection_item"
+        },
+        {
+          "type": "collection_item"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

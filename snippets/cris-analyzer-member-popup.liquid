@@ -1,0 +1,33 @@
+<div class="cris-analyzer-lock__overlay cris-analyzer-lock__overlay--member" role="dialog" aria-modal="true" aria-label="{{ section.settings.member_modal_accessibility_label | escape }}">
+  <div class="cris-analyzer-lock__modal cris-analyzer-lock__modal--member">
+    <button
+      type="button"
+      class="cris-analyzer-lock__close"
+      aria-label="Close dialog"
+      data-cris-close-member-popup
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+
+    <p class="cris-analyzer-lock__message">
+      {{ section.settings.member_beta_message_1 }}
+    </p>
+
+    <p class="cris-analyzer-lock__message">
+      {{ section.settings.member_beta_message_2 }}
+      <a href="mailto:{{ section.settings.member_support_email }}">{{ section.settings.member_support_email }}</a>
+    </p>
+
+    <div class="cris-analyzer-lock__actions cris-analyzer-lock__actions--single">
+      <div class="cris-analyzer-lock__action-block">
+        <button
+          type="button"
+          class="cris-analyzer-lock__cta"
+          data-cris-close-member-popup
+        >
+          {{ section.settings.member_button_label }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

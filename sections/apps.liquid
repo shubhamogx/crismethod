@@ -1,0 +1,31 @@
+<div class="{% if section.settings.include_margins %}t4s-container{% endif %}"{% if settings.animations_reveal_on_scroll %} hdt-reveal="fade-in"{% endif %}>
+  {%- for block in section.blocks -%}
+    {%- render block -%}
+  {%- endfor -%}
+</div>
+
+{% schema %}
+{
+  "name": "App",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "include_margins",
+      "default": true,
+      "label": "Make section margins the same as theme"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "App"
+    }
+  ]
+}
+{% endschema %}

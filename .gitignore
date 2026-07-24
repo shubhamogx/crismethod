@@ -1,0 +1,10 @@
+# Theme zip exports
+*.zip
+theme_export__*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

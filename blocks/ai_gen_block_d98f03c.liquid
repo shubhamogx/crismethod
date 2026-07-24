@@ -1,0 +1,882 @@
+{% doc %}
+  @prompt
+    Create a new Shopify Liquid section called "Member Downloads" with repeatable blocks for downloadable files. Each block should have: a file title (text field), a file URL (URL field), an optional image, and an optional description (textarea). The section should display the blocks as styled cards with a download icon. The section should only be visible to members.
+{% enddoc %}
+
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+{% assign image_class = 'ai-member-downloads__image-' | append: ai_gen_id %}
+{% assign member_tag_keyword = block.settings.member_tag_keyword | downcase | strip %}
+{% assign show_member_section = false %}
+
+{% if request.design_mode %}
+  {% assign show_member_section = true %}
+{% elsif customer %}
+  {% if member_tag_keyword == blank %}
+    {% assign show_member_section = true %}
+  {% else %}
+    {% for ctag in customer.tags %}
+      {% assign normalized_tag = ctag | downcase | strip %}
+      {% if normalized_tag contains member_tag_keyword %}
+        {% assign show_member_section = true %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endif %}
+
+{% style %}
+  .ai-member-downloads-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    padding: 60px 20px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-member-downloads__container-{{ ai_gen_id }} {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .ai-member-downloads__heading-{{ ai_gen_id }} {
+    font-size: 32px;
+    font-weight: 500;
+    color: {{ block.settings.heading_color }};
+    text-align: center;
+    margin: 0 0 48px;
+    letter-spacing: 0.5px;
+  }
+
+  .ai-member-downloads__grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .ai-member-downloads__card-{{ ai_gen_id }} {
+    background-color: {{ block.settings.card_background }};
+    border: 1px solid {{ block.settings.card_border_color }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    padding: 32px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: hidden;
+  }
+
+  .ai-member-downloads__card-{{ ai_gen_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border-color: {{ block.settings.card_border_hover_color }};
+  }
+
+  .ai-member-downloads__image-wrap-{{ ai_gen_id }} {
+    margin: -32px -32px 8px;
+    border-bottom: 1px solid {{ block.settings.card_border_color }};
+    background: #f7f7f7;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+  }
+
+  .{{ image_class }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-member-downloads__card-header-{{ ai_gen_id }} {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .ai-member-downloads__icon-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: {{ block.settings.icon_background }};
+    border-radius: 50%;
+    color: {{ block.settings.icon_color }};
+  }
+
+  .ai-member-downloads__icon-{{ ai_gen_id }} svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .ai-member-downloads__card-content-{{ ai_gen_id }} {
+    flex-grow: 1;
+  }
+
+  .ai-member-downloads__title-{{ ai_gen_id }} {
+    font-size: 18px;
+    font-weight: 500;
+    color: {{ block.settings.title_color }};
+    margin: 0 0 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .ai-member-downloads__description-{{ ai_gen_id }} {
+    font-size: 14px;
+    line-height: 1.6;
+    color: {{ block.settings.description_color }};
+    margin: 0;
+  }
+
+  .ai-member-downloads__button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background-color: {{ block.settings.button_background }};
+    color: {{ block.settings.button_text_color }};
+    border: 1px solid {{ block.settings.button_border_color }};
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    width: 100%;
+  }
+
+  .ai-member-downloads__button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_background }};
+    color: {{ block.settings.button_hover_text_color }};
+    border-color: {{ block.settings.button_hover_border_color }};
+    transform: translateY(-1px);
+  }
+
+  .ai-member-downloads__button-icon-{{ ai_gen_id }} {
+    width: 16px;
+    height: 16px;
+  }
+
+  .ai-member-downloads__empty-{{ ai_gen_id }} {
+    text-align: center;
+    padding: 80px 20px;
+    color: {{ block.settings.description_color }};
+  }
+
+  .ai-member-downloads__empty-icon-{{ ai_gen_id }} {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    opacity: 0.3;
+  }
+
+  .ai-member-downloads__empty-text-{{ ai_gen_id }} {
+    font-size: 16px;
+    color: {{ block.settings.description_color }};
+  }
+
+  .ai-member-downloads__locked-wrap-{{ ai_gen_id }} {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .ai-member-downloads__locked-card-{{ ai_gen_id }} {
+    background-color: {{ block.settings.card_background }};
+    border: 1px solid {{ block.settings.card_border_color }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    padding: 36px;
+    text-align: left;
+  }
+
+  .ai-member-downloads__locked-body-{{ ai_gen_id }} {
+    color: {{ block.settings.description_color }};
+    font-size: 16px;
+    line-height: 1.7;
+    margin: 0 0 24px;
+  }
+
+  .ai-member-downloads__locked-button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    background-color: {{ block.settings.button_background }};
+    color: {{ block.settings.button_text_color }};
+    border: 1px solid {{ block.settings.button_border_color }};
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .ai-member-downloads__locked-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_background }};
+    color: {{ block.settings.button_hover_text_color }};
+    border-color: {{ block.settings.button_hover_border_color }};
+    transform: translateY(-1px);
+  }
+
+  .ai-member-downloads--locked-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+    min-height: 520px;
+  }
+
+  .ai-member-downloads__preview-{{ ai_gen_id }} {
+    filter: blur({{ block.settings.non_member_preview_blur }}px);
+    transform: scale(1.03);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .ai-member-downloads__preview-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-member-downloads__preview-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #f2eee9 0%, #e7e1d8 100%);
+    color: #2c2c2c;
+    font-size: 22px;
+  }
+
+  .ai-member-downloads__overlay-{{ ai_gen_id }} {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, 0.34);
+    padding: 20px;
+    z-index: 2;
+  }
+
+  .ai-member-downloads__action-label-{{ ai_gen_id }} {
+    margin: 0 0 10px;
+    color: {{ block.settings.description_color }};
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .ai-member-downloads__locked-button-secondary-{{ ai_gen_id }} {
+    background: transparent;
+    color: {{ block.settings.button_background }};
+  }
+
+  .ai-member-downloads__locked-card-{{ ai_gen_id }} {
+    background-color: #fff !important;
+    text-align: center;
+  }
+
+  .ai-member-downloads__action-outr {
+    display: flex;
+    justify-content: space-evenly;
+    gap: 20px;
+  }
+
+  .ai-member-downloads__action-outr .ai-member-downloads__locked-button-{{ ai_gen_id }}, .ai-member-downloads__action-outr .ai-member-downloads__locked-button-secondary-{{ ai_gen_id }} {
+    padding: 8px 24px !important;
+    background-color: #583529 !important;
+    border-color: #583529 !important;
+    color: #fff !important;
+  }
+
+  .ai-member-downloads__action-outr .ai-member-downloads__locked-button-{{ ai_gen_id }}:hover, .ai-member-downloads__action-outr .ai-member-downloads__locked-button-secondary-{{ ai_gen_id }}:hover {
+    opacity: 0.8  !important;
+  }
+
+
+  @media screen and (max-width: 768px) {
+    .ai-member-downloads-{{ ai_gen_id }} {
+      padding: 40px 16px;
+    }
+
+    .ai-member-downloads__heading-{{ ai_gen_id }} {
+      font-size: 24px;
+      margin-bottom: 32px;
+    }
+
+    .ai-member-downloads__grid-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .ai-member-downloads__card-{{ ai_gen_id }} {
+      padding: 24px;
+    }
+
+    .ai-member-downloads__image-wrap-{{ ai_gen_id }} {
+      margin: -24px -24px 8px;
+    }
+
+    .ai-member-downloads__locked-card-{{ ai_gen_id }} {
+      padding: 24px;
+    }
+    .ai-member-downloads__action-outr {
+      flex-wrap: wrap;
+    }
+  }
+{% endstyle %}
+
+{% if show_member_section %}
+  <member-downloads-{{ ai_gen_id }}
+    class="ai-member-downloads-{{ ai_gen_id }}"
+    {{ block.shopify_attributes }}
+  >
+    <div class="ai-member-downloads__container-{{ ai_gen_id }}">
+      {% if block.settings.section_heading != blank %}
+        <h2 class="ai-member-downloads__heading-{{ ai_gen_id }}">
+          {{ block.settings.section_heading }}
+        </h2>
+      {% endif %}
+
+      {% liquid
+        assign has_files = false
+        for i in (1..6)
+          assign title_key = 'file_title_' | append: i
+          assign url_key = 'file_url_' | append: i
+          if block.settings[title_key] != blank and block.settings[url_key] != blank
+            assign has_files = true
+            break
+          endif
+        endfor
+      %}
+
+      {% if has_files %}
+        <div class="ai-member-downloads__grid-{{ ai_gen_id }}">
+          {% for i in (1..6) %}
+            {% liquid
+              assign title_key = 'file_title_' | append: i
+              assign url_key = 'file_url_' | append: i
+              assign desc_key = 'file_description_' | append: i
+              assign image_key = 'file_image_' | append: i
+              assign file_title = block.settings[title_key]
+              assign file_url = block.settings[url_key]
+              assign file_desc = block.settings[desc_key]
+              assign file_image = block.settings[image_key]
+            %}
+            {% if file_title != blank and file_url != blank %}
+              <div class="ai-member-downloads__card-{{ ai_gen_id }}">
+                {% if file_image != blank %}
+                  <div class="ai-member-downloads__image-wrap-{{ ai_gen_id }}">
+                    {{
+                      file_image
+                      | image_url: width: 900
+                      | image_tag:
+                        class: image_class,
+                        loading: 'lazy',
+                        alt: file_title
+                    }}
+                  </div>
+                {% endif %}
+
+                <div class="ai-member-downloads__card-header-{{ ai_gen_id }}">
+                  <div class="ai-member-downloads__card-content-{{ ai_gen_id }}">
+                    <h3 class="ai-member-downloads__title-{{ ai_gen_id }}">
+                      {{ file_title }}
+                    </h3>
+                    {% if file_desc != blank %}
+                      <p class="ai-member-downloads__description-{{ ai_gen_id }}">
+                        {{ file_desc }}
+                      </p>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <a
+                  href="{{ file_url }}"
+                  class="ai-member-downloads__button-{{ ai_gen_id }}"
+                  download
+                >
+                  <svg
+                    class="ai-member-downloads__button-icon-{{ ai_gen_id }}"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Download
+                </a>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="ai-member-downloads__empty-{{ ai_gen_id }}">
+          <div class="ai-member-downloads__empty-icon-{{ ai_gen_id }}">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="12" y1="18" x2="12" y2="12"></line>
+              <line x1="9" y1="15" x2="15" y2="15"></line>
+            </svg>
+          </div>
+          <p class="ai-member-downloads__empty-text-{{ ai_gen_id }}">
+            Add downloadable files in the block settings
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  </member-downloads-{{ ai_gen_id }}>
+
+  <script>
+    (function() {
+      class MemberDownloads{{ ai_gen_id }} extends HTMLElement {
+        connectedCallback() {
+          this.initDownloadTracking();
+        }
+
+        initDownloadTracking() {
+          const downloadButtons = this.querySelectorAll('.ai-member-downloads__button-{{ ai_gen_id }}');
+          downloadButtons.forEach((button) => {
+            button.addEventListener('click', function() {
+              const fileName = this.closest('.ai-member-downloads__card-{{ ai_gen_id }}')
+                .querySelector('.ai-member-downloads__title-{{ ai_gen_id }}')?.textContent.trim() || 'Unknown file';
+              console.log('Download initiated:', fileName);
+            });
+          });
+        }
+      }
+
+      if (!customElements.get('member-downloads-{{ ai_gen_id }}')) {
+        customElements.define('member-downloads-{{ ai_gen_id }}', MemberDownloads{{ ai_gen_id }});
+      }
+    })();
+  </script>
+{% else %}
+  {% assign preview_image_class = 'ai-member-downloads__preview-image-' | append: ai_gen_id %}
+  {% assign join_url = block.settings.join_button_link | default: 'https://crismethod.com/pages/ceoclub' %}
+  {% assign login_url = block.settings.login_button_link | default: routes.account_login_url %}
+
+  <div class="ai-member-downloads-{{ ai_gen_id }} ai-member-downloads--locked-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+    <div class="ai-member-downloads__preview-{{ ai_gen_id }}" aria-hidden="true">
+      {% if block.settings.non_member_preview_image != blank %}
+        {{
+          block.settings.non_member_preview_image
+          | image_url: width: 2200
+          | image_tag:
+            class: preview_image_class,
+            loading: 'lazy',
+            alt: 'Member portal preview'
+        }}
+      {% else %}
+        <div class="ai-member-downloads__preview-placeholder-{{ ai_gen_id }}">
+          Member Portal Preview
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="ai-member-downloads__overlay-{{ ai_gen_id }}" role="dialog" aria-modal="true">
+      <div class="ai-member-downloads__locked-wrap-{{ ai_gen_id }}">
+        <div class="ai-member-downloads__locked-card-{{ ai_gen_id }}">
+          <p class="ai-member-downloads__locked-body-{{ ai_gen_id }}">
+            {{ block.settings.locked_message }}
+          </p>
+          <div class="ai-member-downloads__action-outr">
+            <div class="ai-member-downloads__action-block-{{ ai_gen_id }}">
+              <p class="ai-member-downloads__action-label-{{ ai_gen_id }}">{{ block.settings.join_prompt }}</p>
+              <a href="{{ join_url }}" class="ai-member-downloads__locked-button-{{ ai_gen_id }}">
+                {{ block.settings.join_button_label }}
+              </a>
+            </div>
+
+            <div class="ai-member-downloads__action-block-{{ ai_gen_id }}">
+              <p class="ai-member-downloads__action-label-{{ ai_gen_id }}">{{ block.settings.login_prompt }}</p>
+              <a href="{{ login_url }}" class="ai-member-downloads__locked-button-{{ ai_gen_id }} ai-member-downloads__locked-button-secondary-{{ ai_gen_id }}">
+                {{ block.settings.login_button_label }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Member downloads",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "section_heading",
+      "label": "Section heading",
+      "default": "Member Resources"
+    },
+    {
+      "type": "header",
+      "content": "Visibility"
+    },
+    {
+      "type": "text",
+      "id": "member_tag_keyword",
+      "label": "Member tag keyword",
+      "default": "cris-method-member",
+      "info": "Section shows only if logged-in customer has a tag containing this keyword."
+    },
+    {
+      "type": "header",
+      "content": "Non-member lock state"
+    },
+    {
+      "type": "image_picker",
+      "id": "non_member_preview_image",
+      "label": "Non-member preview image"
+    },
+    {
+      "type": "range",
+      "id": "non_member_preview_blur",
+      "label": "Preview blur",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 6
+    },
+    {
+      "type": "textarea",
+      "id": "locked_message",
+      "label": "Locked message",
+      "default": "The CRIS Method Analyzer is for CEO Club members only. Join the CEO Club to access the analyzer and organize and optimize your routine today!"
+    },
+    {
+      "type": "text",
+      "id": "join_prompt",
+      "label": "Join prompt",
+      "default": "Join the CEO Club today!"
+    },
+    {
+      "type": "text",
+      "id": "join_button_label",
+      "label": "Join button label",
+      "default": "Learn More"
+    },
+    {
+      "type": "url",
+      "id": "join_button_link",
+      "label": "Join button link"
+    },
+    {
+      "type": "text",
+      "id": "login_prompt",
+      "label": "Login prompt",
+      "default": "Already a part of the CEO Club?"
+    },
+    {
+      "type": "text",
+      "id": "login_button_label",
+      "label": "Login button label",
+      "default": "Log In"
+    },
+    {
+      "type": "url",
+      "id": "login_button_link",
+      "label": "Login button link (optional)"
+    },
+    {
+      "type": "header",
+      "content": "File 1"
+    },
+    {
+      "type": "text",
+      "id": "file_title_1",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "file_url_1",
+      "label": "File URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "file_image_1",
+      "label": "Image (optional)"
+    },
+    {
+      "type": "textarea",
+      "id": "file_description_1",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "File 2"
+    },
+    {
+      "type": "text",
+      "id": "file_title_2",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "file_url_2",
+      "label": "File URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "file_image_2",
+      "label": "Image (optional)"
+    },
+    {
+      "type": "textarea",
+      "id": "file_description_2",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "File 3"
+    },
+    {
+      "type": "text",
+      "id": "file_title_3",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "file_url_3",
+      "label": "File URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "file_image_3",
+      "label": "Image (optional)"
+    },
+    {
+      "type": "textarea",
+      "id": "file_description_3",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "File 4"
+    },
+    {
+      "type": "text",
+      "id": "file_title_4",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "file_url_4",
+      "label": "File URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "file_image_4",
+      "label": "Image (optional)"
+    },
+    {
+      "type": "textarea",
+      "id": "file_description_4",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "File 5"
+    },
+    {
+      "type": "text",
+      "id": "file_title_5",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "file_url_5",
+      "label": "File URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "file_image_5",
+      "label": "Image (optional)"
+    },
+    {
+      "type": "textarea",
+      "id": "file_description_5",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "File 6"
+    },
+    {
+      "type": "text",
+      "id": "file_title_6",
+      "label": "Title"
+    },
+    {
+      "type": "url",
+      "id": "file_url_6",
+      "label": "File URL"
+    },
+    {
+      "type": "image_picker",
+      "id": "file_image_6",
+      "label": "Image (optional)"
+    },
+    {
+      "type": "textarea",
+      "id": "file_description_6",
+      "label": "Description"
+    },
+    {
+      "type": "header",
+      "content": "Section style"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#2c2c2c"
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Background",
+      "default": "#fafafa"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Border",
+      "default": "#e8e8e8"
+    },
+    {
+      "type": "color",
+      "id": "card_border_hover_color",
+      "label": "Border on hover",
+      "default": "#d0d0d0"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Icon style"
+    },
+    {
+      "type": "color",
+      "id": "icon_background",
+      "label": "Background",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon",
+      "default": "#6b6b6b"
+    },
+    {
+      "type": "header",
+      "content": "Text style"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title",
+      "default": "#2c2c2c"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description",
+      "default": "#6b6b6b"
+    },
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Background",
+      "default": "#2c2c2c"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Border",
+      "default": "#2c2c2c"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background",
+      "label": "Hover background",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Hover text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_border_color",
+      "label": "Hover border",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Member downloads"
+    }
+  ]
+}
+{% endschema %}

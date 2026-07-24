@@ -1,0 +1,36 @@
+{%- comment -%}
+  CEO Club cart savings banner markup.
+  Script/config is loaded once from theme.liquid via ceo-club-cart-savings-boot.
+{%- endcomment -%}
+
+<div
+  class="ceo-club-savings"
+  data-ceo-club-savings
+  hidden
+  role="region"
+  aria-label="CEO Club savings"
+>
+  <div data-ceo-offer>
+    <p class="ceo-club-savings__title">Join the CEO Club</p>
+    <p class="ceo-club-savings__text">
+      You could save <strong data-ceo-savings-amount>$0.00</strong> on this order
+      with the additional 7% member perk.
+    </p>
+  </div>
+
+  <div data-ceo-pending hidden>
+    <p class="ceo-club-savings__title">Your cart is saved</p>
+    <p class="ceo-club-savings__text">
+      Complete your CEO Club signup, then restore your items to checkout with your member perk.
+    </p>
+  </div>
+
+  <div class="ceo-club-savings__actions">
+    <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--primary" data-ceo-join>
+      Join CEO Club &amp; save
+    </button>
+    <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--secondary" data-ceo-restore hidden>
+      Restore my items
+    </button>
+  </div>
+</div>

@@ -1,0 +1,85 @@
+{%- liquid
+  assign ceo_discount_percent = 7
+  assign ceo_join_url = '/pages/ceoclub'
+  assign ceo_member_tag = 'cris-method-member'
+  assign ceo_is_member = false
+  if customer
+    for tag in customer.tags
+      assign tag_down = tag | downcase
+      if tag_down contains ceo_member_tag
+        assign ceo_is_member = true
+        break
+      endif
+    endfor
+  endif
+  assign gift_pr = all_products[settings.gift_wrap_pr]
+  assign gift_pr_id = gift_pr.id | default: ''
+-%}
+
+<style>
+  .ceo-club-savings {
+    margin: 12px 16px 4px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #f7f0ee 0%, #ebe0e0 100%);
+    border: 1px solid #dac2bc;
+    color: #583529;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .ceo-club-savings[hidden] { display: none !important; }
+  .ceo-club-savings__title {
+    margin: 0 0 6px;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .ceo-club-savings__text { margin: 0 0 12px; }
+  .ceo-club-savings__text strong { font-weight: 700; }
+  .ceo-club-savings__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ceo-club-savings__btn {
+    appearance: none;
+    border: 0;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: opacity .2s ease, background-color .2s ease;
+  }
+  .ceo-club-savings__btn:disabled {
+    opacity: .65;
+    cursor: wait;
+  }
+  .ceo-club-savings__btn--primary {
+    background: #583529;
+    color: #fff;
+  }
+  .ceo-club-savings__btn--primary:hover { background: #45291f; }
+  .ceo-club-savings__btn--secondary {
+    background: #fff;
+    color: #583529;
+    border: 1px solid #583529;
+  }
+  .t4s-cartPage .ceo-club-savings,
+  .t4s-container > .ceo-club-savings {
+    margin: 0 0 16px;
+  }
+</style>
+
+<script>
+  window.CRIS_CEO_CLUB = {
+    discountPercent: {{ ceo_discount_percent }},
+    joinUrl: {{ ceo_join_url | json }},
+    membershipType: 'subscription',
+    giftProductId: {{ gift_pr_id | json }},
+    moneyFormat: {{ shop.money_format | json }},
+    isMember: {{ ceo_is_member | json }},
+    storageKey: 'cris_ceo_club_saved_cart'
+  };
+</script>
+<script src="{{ 'ceo-club-cart-savings.js' | asset_url }}" defer></script>

@@ -83,6 +83,8 @@
     </style>
   {% endif %}
 
+  {% render 'ceo-club-cart-savings' %}
+
   <div class="t4s-cookie-message t4s-dn">{{ 'cart.general.cookies_required' | t }}</div>
   <form data-cart-content data-cart-wrapper action="{{ routes.cart_url }}" method="post" novalidate class="t4s-cartPage__form t4s-pr t4s-oh">
     <input type="hidden" data-cart-attr-rm name="attributes[collection_items_per_row]" value="">

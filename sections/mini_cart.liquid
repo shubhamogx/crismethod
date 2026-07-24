@@ -161,6 +161,7 @@
       <div data-t4s-scroll-me class="t4s-drawer__scroll t4s-current-scrollbar">
          <div class="t4s-cookie-message t4s-dn">{{ 'cart.general.cookies_required' | t }}</div>
          {%- if se_style == '1' and se_pos == '1' %}{{- html_btn -}}{% endif -%}
+         {% render 'ceo-club-cart-savings' %}
          <div data-cart-items class="t4s-mini_cart__items t4s_ratioadapt t4s-product">
             {%- if ccount > 0 -%}
 

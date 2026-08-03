@@ -21,7 +21,7 @@
   endif
 -%}
 
- <div data-cart-item data-pid="{{ item.product_id }}" class="t4s-mini_cart__item cart_item_{{ item_id }} t4s-d-flex t4s-align-items-center t4s-pr t4s-oh{% if gift_pr_id == item.product_id %} is--gift{% endif %}">
+ <div data-cart-item data-ceo-cart-key="{{ item_key }}" data-ceo-product-type="{{ item_pr.type | escape }}" data-pid="{{ item.product_id }}" class="t4s-mini_cart__item cart_item_{{ item_id }} t4s-d-flex t4s-align-items-center t4s-pr t4s-oh{% if gift_pr_id == item.product_id %} is--gift{% endif %}">
     <a href="{{ item_url }}" class="t4s-mini_cart__img t4s-pr t4s-oh t4s_ratio t4s-bg-11" style="background: url({{ image | image_url: width: 1 }});--aspect-ratioapt:{{ image.aspect_ratio | default: 1 }}">
       {%- if image != blank -%}
         <img class="lazyloadt4s" width="120" height="{{ 120 | divided_by: image.aspect_ratio | ceil }}" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="{{ image | image_url: width: 1 }}" data-widths="[120, 240]" data-sizes="auto" alt="{{ image.alt | escape }}">

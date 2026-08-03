@@ -60,29 +60,7 @@
 </symbol>
 </svg>
 <div class="t4s-container">
-    {%- comment -%} Membership vs physical cart conflict check {%- endcomment -%}
-  {% assign has_subscription = false %}
-  {% assign has_physical = false %}
-  {% for item in cart.items %}
-    {% if item.product.type == 'subscription' %}
-      {% assign has_subscription = true %}
-    {% elsif item.requires_shipping and item.product.type != blank %}
-      {% assign has_physical = true %}
-    {% endif %}
-  {% endfor %}
-  {% if has_subscription and has_physical %}
-    <div class="t4s-cart-membership-error" style="background:#fff3cd;border:1px solid #ffc107;padding:12px 16px;margin-bottom:16px;border-radius:4px;text-align:center;">
-      Membership and physical products must be purchased separately. Please remove one type from your cart.
-    </div>
-    <style>
-      .t4s-btn__checkout,
-      .additional_checkout_buttons {
-        pointer-events: none;
-        opacity: 0.5;
-      }
-    </style>
-  {% endif %}
-
+  {%- comment -%} CEO Club: membership + products allowed in one cart/checkout {%- endcomment -%}
   {% render 'ceo-club-cart-savings' %}
 
   <div class="t4s-cookie-message t4s-dn">{{ 'cart.general.cookies_required' | t }}</div>

@@ -21,7 +21,7 @@
   endif
 -%}  
 
- <div data-cart-item class="t4s-page_cart__item{% if gift_pr_id == item.product_id %} is--gift{% endif %}">
+ <div data-cart-item data-ceo-cart-key="{{ item_key }}" data-ceo-product-type="{{ item_pr.type | escape }}" class="t4s-page_cart__item{% if gift_pr_id == item.product_id %} is--gift{% endif %}">
     <div class="t4s-row t4s-gx-md-30 t4s-gx-15 t4s-align-items-center">
       <div class="t4s-col-12 t4s-col-md-12 t4s-col-lg-5 t4s-col-item">
           <div class="t4s-page_cart__infos t4s-d-flex t4s-align-items-center">

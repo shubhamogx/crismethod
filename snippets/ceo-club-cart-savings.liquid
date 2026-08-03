@@ -1,6 +1,6 @@
 {%- comment -%}
-  CEO Club cart savings banner markup.
-  Script/config is loaded once from theme.liquid via ceo-club-cart-savings-boot.
+  CEO Club cart chooser: shop with or without membership (Few Moda–style).
+  Script/config loads once from theme.liquid via ceo-club-cart-savings-boot.
 {%- endcomment -%}
 
 <div
@@ -8,40 +8,67 @@
   data-ceo-club-savings
   hidden
   role="region"
-  aria-label="CEO Club savings"
+  aria-label="Choose how you shop"
 >
-  <div data-ceo-offer>
-    <p class="ceo-club-savings__title">Join the CEO Club</p>
+  {%- comment -%} Already a member {%- endcomment -%}
+  <div data-ceo-member-msg hidden>
+    <p class="ceo-club-savings__title">Welcome back, CEO Club member</p>
     <p class="ceo-club-savings__text">
-      You could save <strong data-ceo-savings-amount>$0.00</strong> on this order
-      with the additional 7% member perk.
+      Your 7% member perk applies to this order.
     </p>
   </div>
 
-  <div data-ceo-pending hidden>
-    <p class="ceo-club-savings__title">Your products are saved</p>
-    <p class="ceo-club-savings__text">
-      Continue to the CEO Club membership page and add it to cart. Do not restore your products until after you finish membership checkout.
+  {%- comment -%} Non-member: with / without radios {%- endcomment -%}
+  <div data-ceo-chooser>
+    <p class="ceo-club-savings__title">Choose how you shop</p>
+    <p class="ceo-club-savings__text ceo-club-savings__intro">
+      Join the CEO Club and save <strong data-ceo-savings-amount>$0.00</strong> on this order
+      with the additional 7% member perk — all in one checkout.
     </p>
-  </div>
 
-  <div data-ceo-checkout hidden>
-    <p class="ceo-club-savings__title">Almost there</p>
-    <p class="ceo-club-savings__text">
-      Your products are saved. Checkout with <strong>membership only</strong> now.
-      After you become a member, come back and restore your products to get the 7% perk.
+    <div class="ceo-club-savings__options" role="radiogroup" aria-label="Membership options">
+      <label class="ceo-club-savings__option" data-ceo-option="without">
+        <input
+          type="radio"
+          name="ceo-club-mode"
+          value="without"
+          data-ceo-mode
+        >
+        <span class="ceo-club-savings__option-body">
+          <span class="ceo-club-savings__option-top">
+            <span class="ceo-club-savings__option-label">Without CEO Club</span>
+            <span class="ceo-club-savings__option-price" data-ceo-price-without>$0.00</span>
+          </span>
+          <span class="ceo-club-savings__option-desc">Pay full price. No membership required.</span>
+        </span>
+      </label>
+
+      <label class="ceo-club-savings__option" data-ceo-option="with">
+        <input
+          type="radio"
+          name="ceo-club-mode"
+          value="with"
+          data-ceo-mode
+        >
+        <span class="ceo-club-savings__option-body">
+          <span class="ceo-club-savings__option-top">
+            <span class="ceo-club-savings__option-label">With CEO Club</span>
+            <span class="ceo-club-savings__option-price" data-ceo-price-with>$0.00</span>
+          </span>
+          <span class="ceo-club-savings__option-desc">
+            Add membership (<span data-ceo-membership-price>$0.00</span>) and save
+            <strong data-ceo-savings-amount-alt>$0.00</strong> on your products with the 7% perk.
+          </span>
+          <span class="ceo-club-savings__option-perks">
+            7% member savings · One checkout · Keep your products in cart
+          </span>
+        </span>
+      </label>
+    </div>
+
+    <p class="ceo-club-savings__note" data-ceo-busy-note hidden>Updating cart…</p>
+    <p class="ceo-club-savings__note" data-ceo-discount-pending hidden>
+      Member prices are shown in your cart. To charge those prices at checkout, add the automatic 7% Buy X Get Y discount in Shopify Admin (buy CEO Club → 7% off products).
     </p>
-  </div>
-
-  <div class="ceo-club-savings__actions">
-    <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--primary" data-ceo-join>
-      Join CEO Club &amp; save
-    </button>
-    <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--primary" data-ceo-checkout-btn hidden>
-      Checkout membership
-    </button>
-    <button type="button" class="ceo-club-savings__btn ceo-club-savings__btn--secondary" data-ceo-restore hidden>
-      Restore my items
-    </button>
   </div>
 </div>

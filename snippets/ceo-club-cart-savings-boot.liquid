@@ -14,6 +14,27 @@
   endif
   assign gift_pr = all_products[settings.gift_wrap_pr]
   assign gift_pr_id = gift_pr.id | default: ''
+  assign ceo_product = all_products['cris-method']
+  assign ceo_variant = ceo_product.selected_or_first_available_variant
+  assign ceo_variant_id = ceo_variant.id | default: ''
+  assign ceo_membership_price = ceo_variant.price | default: 0
+  assign ceo_selling_plan_id = ''
+  if ceo_variant.selling_plan_allocations.size > 0
+    assign ceo_alloc = ceo_variant.selling_plan_allocations.first
+    assign ceo_selling_plan_id = ceo_alloc.selling_plan.id
+    assign ceo_membership_price = ceo_alloc.price | default: ceo_membership_price
+  elsif ceo_product.selling_plan_groups.size > 0
+    for group in ceo_product.selling_plan_groups
+      if group.selling_plans.size > 0
+        assign ceo_selling_plan_id = group.selling_plans.first.id
+        break
+      endif
+    endfor
+  endif
+  # Fallback if all_products omits selling plans (Appstle CEO Club plan)
+  if ceo_selling_plan_id == blank
+    assign ceo_selling_plan_id = 6282838269
+  endif
 -%}
 
 <style>
@@ -34,40 +55,124 @@
     font-size: 15px;
   }
   .ceo-club-savings__text { margin: 0 0 12px; }
+  .ceo-club-savings__intro { margin-bottom: 14px; }
   .ceo-club-savings__text strong { font-weight: 700; }
-  .ceo-club-savings__actions {
+
+  .ceo-club-savings__options {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
   }
-  .ceo-club-savings__btn {
-    appearance: none;
-    border: 0;
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 10px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1.2;
-    transition: opacity .2s ease, background-color .2s ease;
-  }
-  .ceo-club-savings__btn:disabled {
-    opacity: .65;
-    cursor: wait;
-  }
-  .ceo-club-savings__btn--primary {
-    background: #583529;
-    color: #fff;
-  }
-  .ceo-club-savings__btn--primary:hover { background: #45291f; }
-  .ceo-club-savings__btn--secondary {
+  .ceo-club-savings__option {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #d4b8b0;
     background: #fff;
-    color: #583529;
-    border: 1px solid #583529;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease;
   }
+  .ceo-club-savings__option:hover {
+    border-color: #583529;
+  }
+  .ceo-club-savings__option.is-selected,
+  .ceo-club-savings__option:has(input:checked) {
+    border-color: #583529;
+    box-shadow: inset 0 0 0 1px #583529;
+    background: #faf6f4;
+  }
+  .ceo-club-savings__option input {
+    margin-top: 3px;
+    accent-color: #583529;
+    flex-shrink: 0;
+    width: auto !important;
+  }
+  .ceo-club-savings__option-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .ceo-club-savings__option-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .ceo-club-savings__option-label {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .ceo-club-savings__option-price {
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .ceo-club-savings__option-desc {
+    display: block;
+    font-size: 13px;
+    color: #6b4a3e;
+  }
+  .ceo-club-savings__option-perks {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #583529;
+    font-weight: 500;
+  }
+  .ceo-club-savings__note {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: #6b4a3e;
+  }
+  .ceo-club-savings.is-busy {
+    opacity: 0.75;
+    pointer-events: none;
+  }
+
   .t4s-cartPage .ceo-club-savings,
   .t4s-container > .ceo-club-savings {
     margin: 0 0 16px;
+  }
+
+  /* Few Moda–style member pricing in cart */
+  .ceo-club-price {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.3;
+  }
+  .ceo-club-price__retail {
+    font-size: 12px;
+    color: #8a6e64;
+    text-decoration: line-through;
+  }
+  .ceo-club-price__member {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2f6b3a;
+  }
+  .ceo-club-price__member-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #2f6b3a;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .ceo-club-savings-callout {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: #e8f5ec;
+    color: #2f6b3a;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .t4s-cart__totalPrice[data-ceo-member-total] {
+    color: #2f6b3a;
   }
 </style>
 
@@ -76,10 +181,15 @@
     discountPercent: {{ ceo_discount_percent }},
     joinUrl: {{ ceo_join_url | json }},
     membershipType: 'subscription',
+    membershipVariantId: {{ ceo_variant_id | json }},
+    membershipSellingPlanId: {{ ceo_selling_plan_id | json }},
+    membershipPrice: {{ ceo_membership_price | json }},
     giftProductId: {{ gift_pr_id | json }},
     moneyFormat: {{ shop.money_format | json }},
     isMember: {{ ceo_is_member | json }},
-    storageKey: 'cris_ceo_club_saved_cart'
+    /* Optional: Shopify automatic/discount code applied when membership is added.
+       Create a Buy X Get Y (membership → 7% off products) in Admin for checkout truth. */
+    discountCode: ''
   };
 </script>
 <script src="{{ 'ceo-club-cart-savings.js' | asset_url }}" defer></script>

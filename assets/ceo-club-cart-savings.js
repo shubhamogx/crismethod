@@ -329,7 +329,8 @@
     var hasMembership = cartHasMembership(cart);
     var memPrice = membershipLinePrice(cart);
     var withoutTotal = eligible;
-    var withTotal = Math.max(0, eligible - savings) + memPrice;
+    // Product total with 7% off only (do not add membership fee to this price)
+    var withTotal = Math.max(0, eligible - savings);
     var showMemberPricing = (hasMembership || IS_MEMBER) && hasEligible;
 
     applyMemberPricingToCart(cart, showMemberPricing);
@@ -338,20 +339,14 @@
     var roots = document.querySelectorAll('[data-ceo-club-savings]');
     roots.forEach(function (root) {
       var chooser = root.querySelector('[data-ceo-chooser]');
-      var memberMsg = root.querySelector('[data-ceo-member-msg]');
-      var savingsEls = root.querySelectorAll('[data-ceo-savings-amount], [data-ceo-savings-amount-alt]');
+      var savingsEls = root.querySelectorAll('[data-ceo-savings-amount]');
       var priceWithout = root.querySelector('[data-ceo-price-without]');
       var priceWith = root.querySelector('[data-ceo-price-with]');
       var memPriceEl = root.querySelector('[data-ceo-membership-price]');
 
+      // Hide entire block for logged-in CEO / members
       if (IS_MEMBER) {
-        if (!hasEligible && !hasMembership) {
-          root.hidden = true;
-          return;
-        }
-        root.hidden = false;
-        if (chooser) chooser.hidden = true;
-        if (memberMsg) memberMsg.hidden = false;
+        root.hidden = true;
         return;
       }
 
@@ -362,7 +357,6 @@
 
       root.hidden = false;
       if (chooser) chooser.hidden = false;
-      if (memberMsg) memberMsg.hidden = true;
 
       savingsEls.forEach(function (el) {
         el.textContent = formatMoney(savings);
@@ -370,12 +364,6 @@
       if (priceWithout) priceWithout.textContent = formatMoney(withoutTotal);
       if (priceWith) priceWith.textContent = formatMoney(withTotal);
       if (memPriceEl) memPriceEl.textContent = formatMoney(memPrice);
-
-      var pending = root.querySelector('[data-ceo-discount-pending]');
-      if (pending) {
-        var discountApplied = Number(cart.total_discount || 0) > 0;
-        pending.hidden = !(hasMembership && hasEligible && !discountApplied);
-      }
     });
   }
 

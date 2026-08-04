@@ -6,7 +6,7 @@
   if customer
     for tag in customer.tags
       assign tag_down = tag | downcase
-      if tag_down contains ceo_member_tag
+      if tag_down contains ceo_member_tag or tag_down contains 'ceo'
         assign ceo_is_member = true
         break
       endif
@@ -112,15 +112,29 @@
   }
   .ceo-club-savings__option-desc {
     display: block;
+    margin: 0 0 6px;
     font-size: 13px;
     color: #6b4a3e;
   }
-  .ceo-club-savings__option-perks {
-    display: block;
-    margin-top: 6px;
-    font-size: 12px;
+  .ceo-club-savings__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .ceo-club-savings__list li {
+    position: relative;
+    margin: 0 0 4px;
+    padding-left: 1.15em;
+    font-size: 13px;
+    color: #6b4a3e;
+    line-height: 1.4;
+  }
+  .ceo-club-savings__list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    font-weight: 700;
     color: #583529;
-    font-weight: 500;
   }
   .ceo-club-savings__note {
     margin: 10px 0 0;

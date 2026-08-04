@@ -290,7 +290,9 @@
       });
     });
 
-    var memPrice = membershipLinePrice(cart);
+    // Only add membership fee when the membership product is actually in the cart.
+    // Logged-in members shopping products alone should not get +$25 on the subtotal.
+    var memPrice = cartHasMembership(cart) ? membershipLinePrice(cart) : 0;
     var memberCartTotal =
       Math.max(0, eligibleSubtotal(cart) - calcSavings(eligibleSubtotal(cart))) + memPrice;
     if (Number(cart.total_discount || 0) > 0) {

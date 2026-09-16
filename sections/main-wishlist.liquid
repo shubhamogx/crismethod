@@ -154,7 +154,7 @@
                        {%- for j in (0..6) limit: cols_limit -%}
                           {%- if list_continue contains j %}{% continue %}{% endif -%}
 
-                           <button data-btn-as-a data-breakpoint="{{ arr_breakpoint[i] }}" data-col="{{ arr_cols_layout[j] }}"{% if [col_active] == arr_cols_layout[j] %} class="is--active"{% endif %}>{%- assign icon_col_j = 'icon_col_' | append: j -%}{{ [icon_col_j] }}</button>
+                           <button data-btn-as-a data-breakpoint="{{ arr_breakpoint[i] }}" data-col="{{ arr_cols_layout[j] }}"{% if self[col_active] == arr_cols_layout[j] %} class="is--active"{% endif %}>{%- assign icon_col_j = 'icon_col_' | append: j -%}{{ self[icon_col_j] }}</button>
                        {%- endfor -%}
                      </div>
                    {%- endfor -%}
@@ -1284,4 +1284,16 @@
     ]
   }
 }
-{% endschema %}
+{% endschema %}{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{% if [col_active] == arr_cols_layout[j] %}"
+  to: "{% if self[col_active] == arr_cols_layout[j] %}"
+  position: 8014..8061
+- from: "{{ [icon_col_j] }}"
+  to: "{{ self[icon_col_j] }}"
+  position: 8143..8165
+{%- endcomment -%}

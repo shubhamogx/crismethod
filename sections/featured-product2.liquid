@@ -127,7 +127,7 @@
 {%- if block_fbt -%}
   {%- if block_fbt.settings.product_list != blank and section.settings.product != blank -%}
     <div style="display: flex; justify-content: center">
-      {%- render 'FBT', product: section.settings.product, product_list: block_fbt.settings.product_list, is_section: true, t4s-button-color: {{ section.settings.t4s_button_color }} -%}
+      {%- render 'FBT', product: section.settings.product, product_list: block_fbt.settings.product_list, is_section: true, t4s-button-color: nil -%}
     </div>
   {%- else -%}
     <div class="t4s-container">
@@ -580,3 +580,15 @@
   ]
 }
 {% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{%- render 'FBT', product: section.settings.product, product_list: block_fbt.settings.product_list,
+    is_section: true, t4s-button-color: {{ section.settings.t4s_button_color }} -%}"
+  to: "{%- render 'FBT', product: section.settings.product, product_list: block_fbt.settings.product_list,
+    is_section: true, t4s-button-color: nil -%}"
+  position: 5793..5936
+{% endcomment %}

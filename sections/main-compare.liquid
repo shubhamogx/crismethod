@@ -128,7 +128,7 @@
                          {%- if settings.enable_quickview or settings.enable_atc %}
                          <div class="t4s-compare-group-btns">
                            {%- if settings.enable_quickview %}<a data-id="{{ pr_id }}" href="{{ pr_url }}" data-tooltip rel="nofollow" class="t4s-pr-item-btn t4s-pr-quickview" data-action-quickview><span class="t4s-svg-pr-icon"><svg viewBox="0 0 24 24"><use xlink:href="#t4s-icon-qv"></use></svg></span><span class="t4s-text-pr">{{ 'products.product_card.quick_view' | t }}</span></a>{% endif %}
-                           {%- if settings.enable_atc %}{%- render 'product-atc', pr_available: product. available, pr_url: pr_url, isDefault: isDefault, isPreoder: isPreoder, isExternal: isExternal, external_title: external_title, external_link: external_link, isGrouped: isGrouped, current_variant: current_variant, pid: pr_id, cus_qty: cus_qty -%}{% endif %}
+                           {%- if settings.enable_atc %}{%- render 'product-atc', pr_available: product, pr_url: pr_url, isDefault: isDefault, isPreoder: isPreoder, isExternal: isExternal, external_title: external_title, external_link: external_link, isGrouped: isGrouped, current_variant: current_variant, pid: pr_id, cus_qty: cus_qty -%}{% endif %}
                          </div>
                          {% endif %}
                       </div>
@@ -807,4 +807,19 @@
       ]
     }
   }
-{% endschema %}
+{% endschema %}{%- comment -%}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{%- render 'product-atc', pr_available: product. available, pr_url: pr_url,
+    isDefault: isDefault, isPreoder: isPreoder, isExternal: isExternal, external_title:
+    external_title, external_link: external_link, isGrouped: isGrouped, current_variant:
+    current_variant, pid: pr_id, cus_qty: cus_qty -%}"
+  to: "{%- render 'product-atc', pr_available: product, pr_url: pr_url, isDefault:
+    isDefault, isPreoder: isPreoder, isExternal: isExternal, external_title: external_title,
+    external_link: external_link, isGrouped: isGrouped, current_variant: current_variant,
+    pid: pr_id, cus_qty: cus_qty -%}"
+  position: 8424..8707
+{%- endcomment -%}

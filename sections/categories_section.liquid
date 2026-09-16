@@ -45,7 +45,7 @@
       {% endif %}
     >
   {%- endif -%}
-  {%- render 'section_tophead', se_stts: {{se_stts}} -%}
+  {%- render 'section_tophead', se_stts: se_stts -%}
 
   <div
     class="t4s-categories flickityt4s t4s-d-flex t4s-justify-content-center t4s-w-100 t4s-gx-{{ se_stts.space_h_item_mb }} t4s-gx-md-{{ se_stts.space_h_item }} {% if se_stts.nav_dot %} t4s-dots-style-{{ se_stts.dot_owl }} t4s-dots-cl-{{ se_stts.dots_cl }} t4s-dots-round-{{ se_stts.dots_round }} t4s-dots-hidden-mobile-{{ se_stts.dots_hidden_mobile }} t4s-dots-hidden-mobile-{{ se_stts.dots_hidden_mobile }} {% endif %}"
@@ -789,3 +789,13 @@
   ]
 }
 {% endschema %}
+{% comment %}
+
+This file has been rewritten to preserve the original behavior.
+
+---
+Changes:
+- from: "{%- render 'section_tophead', se_stts: {{se_stts}} -%}"
+  to: "{%- render 'section_tophead', se_stts: se_stts -%}"
+  position: 1833..1883
+{% endcomment %}
